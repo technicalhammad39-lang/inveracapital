@@ -115,16 +115,16 @@ export default function LotteryPage() {
                 <div 
                   key={p.id}
                   onClick={() => setSelectedPool(p.id)}
-                  className={`p-5 rounded-2xl cursor-pointer transition-all border-l-4 ${
+                  className={`p-5 rounded-2xl cursor-pointer transition-all border ${
                     isSelected 
-                      ? 'bg-gradient-to-br from-white via-emerald-50 to-brand border-l-brand text-slate-900 shadow-xl border-y-border border-r-border border-y border-r' 
-                      : 'bg-bg-card/40 border-l-border/85 border-y border-r border-y-border/80 border-r-border/80 hover:border-brand/40 text-white hover:bg-bg-card-hover'
+                      ? 'bg-gradient-to-r from-brand/20 via-emerald-900/30 to-bg-card border-brand shadow-[0_0_20px_rgba(0,255,136,0.1)]' 
+                      : 'bg-bg-card/40 border-border/80 hover:bg-gradient-to-r hover:from-brand/10 hover:via-emerald-950/20 hover:to-bg-card hover:border-brand/50'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className={`font-extrabold text-sm ${isSelected ? 'text-slate-900' : 'text-white'}`}>{p.name}</span>
+                    <span className="font-extrabold text-sm text-white">{p.name}</span>
                     <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase border ${
-                      isSelected ? 'bg-slate-900 text-white border-slate-800' : 'bg-brand/10 border-brand/20 text-brand'
+                      isSelected ? 'bg-brand/15 text-brand border-brand/30' : 'bg-brand/10 border-brand/20 text-brand'
                     }`}>
                       Entry: {formatCurrency(p.fee)}
                     </span>
@@ -133,19 +133,19 @@ export default function LotteryPage() {
                   <div className="space-y-3 mt-4">
                     <div className="flex justify-between items-end">
                       <div>
-                        <span className={`text-[10px] ${isSelected ? 'text-slate-600' : 'text-text-secondary'} block uppercase font-bold`}>Prize Pool</span>
-                        <p className={`text-xl font-extrabold ${isSelected ? 'text-slate-900' : 'text-white'}`}>{formatCurrency(p.prize)}</p>
+                        <span className="text-[10px] text-text-secondary block uppercase font-bold">Prize Pool</span>
+                        <p className="text-xl font-extrabold text-white">{formatCurrency(p.prize)}</p>
                       </div>
                       <div className="text-right">
-                        <span className={`text-[9px] ${isSelected ? 'text-slate-600' : 'text-text-secondary'} block uppercase font-bold`}>Tickets Sold</span>
-                        <p className={`text-xs font-extrabold ${isSelected ? 'text-slate-900' : 'text-white'}`}>{p.participants} / {p.maxParticipants}</p>
+                        <span className="text-[9px] text-text-secondary block uppercase font-bold">Tickets Sold</span>
+                        <p className="text-xs font-extrabold text-white">{p.participants} / {p.maxParticipants}</p>
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <div className={`w-full ${isSelected ? 'bg-slate-900/10' : 'bg-bg-base'} h-1.5 rounded-full overflow-hidden`}>
+                      <div className="w-full bg-bg-base h-1.5 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full rounded-full ${isSelected ? 'bg-slate-900' : 'bg-brand'}`} 
+                          className="h-full rounded-full bg-brand" 
                           style={{ width: `${progressPct}%` }} 
                         />
                       </div>
@@ -153,7 +153,7 @@ export default function LotteryPage() {
 
                     <button 
                       className={`w-full text-center font-extrabold text-[10px] py-2 rounded-xl transition-all uppercase tracking-wider ${
-                        isSelected ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-brand text-black hover:bg-brand-hover'
+                        isSelected ? 'bg-brand text-black hover:bg-brand-hover' : 'bg-brand/10 text-brand border border-brand/20 hover:bg-brand/20'
                       }`}
                     >
                       Join Draw
@@ -172,27 +172,34 @@ export default function LotteryPage() {
           className="bg-gradient-to-br from-brand/15 via-bg-card to-bg-base p-6 rounded-3xl lg:col-span-2 relative overflow-hidden flex flex-col justify-between border border-brand/20 min-h-[380px]"
           style={{ boxShadow: `0 10px 40px -10px ${activePool.glow}` }}
         >
-          {/* Glowing background nodes */}
+          {/* Glowing background node */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
           
-          <div className="flex items-center justify-between z-10 w-full">
-            <div className="flex items-center gap-2 bg-brand/10 border border-brand/20 px-3 py-1 rounded-full text-brand text-[10px] font-extrabold uppercase tracking-wider">
-              <Sparkles size={11} /> {activePool.name}
-            </div>
-            <span className="text-[10px] text-brand border border-brand/20 bg-brand/5 px-2.5 py-1 rounded-lg font-bold">
-              Entry: {formatCurrency(activePool.fee)}
-            </span>
+          {/* Floating gift icons background */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <Gift size={30} className="absolute top-[10%] left-[8%] text-brand/8 rotate-12" />
+            <Gift size={22} className="absolute top-[20%] right-[12%] text-brand/6 -rotate-12" />
+            <Gift size={40} className="absolute bottom-[15%] left-[15%] text-brand/5 rotate-45" />
+            <Gift size={18} className="absolute top-[60%] right-[8%] text-brand/7 -rotate-6" />
+            <Gift size={26} className="absolute bottom-[35%] right-[30%] text-brand/4 rotate-20" />
+            <Gift size={20} className="absolute top-[40%] left-[40%] text-brand/5 -rotate-30" />
+            <Gift size={35} className="absolute bottom-[8%] right-[15%] text-brand/6 rotate-15" />
           </div>
 
-          <div className="my-6 space-y-2 relative z-10 text-center">
+          {/* Large animated gift icon + prize */}
+          <div className="my-6 space-y-3 relative z-10 text-center flex flex-col items-center">
+            <div className="relative">
+              <Gift size={60} className="text-brand animate-bounce" strokeWidth={1.5} />
+              <div className="absolute inset-0 blur-xl bg-brand/20 rounded-full" />
+            </div>
             <span className="text-[11px] text-text-secondary font-bold uppercase tracking-widest block">Grand Prize Pool Payout</span>
-            <div className="text-5xl md:text-7xl font-black text-brand glow-text tracking-tight animate-pulse-slow">
+            <div className="text-5xl md:text-7xl font-black text-brand glow-text tracking-tight">
               {formatCurrency(activePool.prize)}
             </div>
           </div>
 
           <div className="w-full space-y-5 z-10">
-            {/* Prize distribution, Estimated payout */}
+            {/* Prize distribution */}
             <div className="grid grid-cols-3 gap-4 bg-bg-base/60 border border-border/80 p-4 rounded-2xl text-center text-xs">
               <div>
                 <span className="text-[9px] text-text-secondary uppercase font-bold block mb-1">1st Place (60%)</span>
@@ -216,7 +223,7 @@ export default function LotteryPage() {
               </div>
               <div className="w-full bg-bg-base h-2 rounded-full overflow-hidden border border-border/55">
                 <div 
-                  className="bg-brand h-full rounded-full transition-all duration-1000 animate-pulse-slow" 
+                  className="bg-brand h-full rounded-full transition-all duration-1000" 
                   style={{ width: `${(activePool.participants / activePool.maxParticipants) * 100}%` }}
                 />
               </div>
@@ -226,7 +233,7 @@ export default function LotteryPage() {
               onClick={handleBuyTicket}
               className="w-full bg-brand text-black font-extrabold text-sm py-4 rounded-2xl hover:bg-brand-hover shadow-[0_0_20px_rgba(0,255,136,0.35)] transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider"
             >
-              <Ticket size={18} strokeWidth={2.5} /> Purchase Pool Payout Ticket
+              <Ticket size={18} strokeWidth={2.5} /> Purchase Ticket — {formatCurrency(activePool.fee)}
             </button>
           </div>
         </motion.div>
