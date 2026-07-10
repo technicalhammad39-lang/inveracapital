@@ -267,54 +267,54 @@ export default function Dashboard() {
                 return (
                   <div 
                     key={inv.name} 
-                    className="bg-gradient-to-br from-white via-emerald-50 to-brand-hover p-4 rounded-2xl shadow-xl flex flex-col justify-between border border-white/20 text-slate-900 gap-3"
+                    className="bg-gradient-to-br from-emerald-950/60 via-bg-card to-bg-base p-3.5 rounded-2xl border border-brand/15 flex flex-col justify-between gap-2.5"
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-slate-900/10 flex items-center justify-center text-slate-800">
-                          <PlanIcon size={16} />
+                        <div className="w-7 h-7 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+                          <PlanIcon size={14} />
                         </div>
                         <div>
-                          <span className="font-extrabold text-xs block text-slate-900 tracking-tight leading-tight">{inv.name}</span>
-                          <span className="text-[9px] text-slate-700 font-bold uppercase tracking-wider">ROI: {inv.rate} Daily</span>
+                          <span className="font-extrabold text-xs block text-white tracking-tight leading-tight">{inv.name}</span>
+                          <span className="text-[9px] text-text-secondary font-bold uppercase tracking-wider">ROI: {inv.rate} Daily</span>
                         </div>
                       </div>
-                      <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-slate-900 text-white rounded-full uppercase tracking-wider">
+                      <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-brand/15 text-brand border border-brand/25 rounded-full uppercase tracking-wider">
                         Earning
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-y-2 gap-x-2 border-y border-slate-900/10 py-2.5 text-[11px]">
+                    <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 border-y border-border/40 py-2 text-[10px]">
                       <div>
-                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Invested</span>
-                        <span className="font-extrabold text-slate-900">{formatCurrency(inv.principal)}</span>
+                        <span className="text-[8px] text-text-secondary block uppercase font-bold">Invested</span>
+                        <span className="font-extrabold text-white">{formatCurrency(inv.principal)}</span>
                       </div>
                       <div>
-                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Earnings</span>
-                        <span className="font-extrabold text-emerald-800">{formatCurrency(inv.earned)}</span>
+                        <span className="text-[8px] text-text-secondary block uppercase font-bold">Earnings</span>
+                        <span className="font-extrabold text-brand">{formatCurrency(inv.earned)}</span>
                       </div>
                       <div>
-                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Expected Maturity</span>
-                        <span className="font-semibold text-slate-800">{inv.maturity}</span>
+                        <span className="text-[8px] text-text-secondary block uppercase font-bold">Expected Maturity</span>
+                        <span className="font-semibold text-text-primary">{inv.maturity}</span>
                       </div>
                       <div>
-                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Remaining</span>
-                        <span className="font-semibold text-slate-800">{inv.days} Days</span>
+                        <span className="text-[8px] text-text-secondary block uppercase font-bold">Remaining</span>
+                        <span className="font-semibold text-text-primary">{inv.days} Days</span>
                       </div>
                     </div>
                     
                     <div className="space-y-1">
-                      <div className="w-full bg-slate-900/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-slate-900 h-full rounded-full" style={{ width: `${inv.progress}%` }}></div>
+                      <div className="w-full bg-bg-base h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-brand h-full rounded-full" style={{ width: `${inv.progress}%` }}></div>
                       </div>
-                      <div className="flex justify-between text-[8px] font-bold text-slate-600">
+                      <div className="flex justify-between text-[8px] font-bold text-text-secondary">
                         <span>Progress: {inv.progress}%</span>
                         <span>{inv.days} days left</span>
                       </div>
                     </div>
 
                     <Link href="/investments" className="w-full">
-                      <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] py-2 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-1">
+                      <button className="w-full bg-brand/10 hover:bg-brand/20 border border-brand/20 text-brand font-bold text-[10px] py-1.5 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-1">
                         <span>More Details</span>
                         <ChevronRight size={12} />
                       </button>

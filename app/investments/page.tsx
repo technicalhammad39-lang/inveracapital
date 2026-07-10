@@ -250,22 +250,6 @@ export default function Investments() {
             ))}
           </div>
         </div>
-
-        {/* Bottom stats details */}
-        <div className="grid grid-cols-3 gap-4 border-t border-border/60 pt-5 mt-6 text-center">
-          <div>
-            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-wider mb-1">Average APR</div>
-            <div className="text-base font-extrabold text-brand">24.5%</div>
-          </div>
-          <div>
-            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-wider mb-1">Weekly Earnings</div>
-            <div className="text-base font-extrabold text-white">{formatCurrency(1350.25)}</div>
-          </div>
-          <div>
-            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-wider mb-1">Risk Rating</div>
-            <div className="text-base font-extrabold text-green-400">Low-Mod</div>
-          </div>
-        </div>
       </motion.div>
 
       {/* Timeline and History Center */}
