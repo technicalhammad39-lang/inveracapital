@@ -203,18 +203,19 @@ export default function SecurityPage() {
               { key: 'sessions', label: 'Active Devices', icon: Activity }
             ].map((btn) => {
               const Icon = btn.icon;
+              const isSelected = activeTab === btn.key;
               return (
                 <button
                   key={btn.key}
                   onClick={() => setActiveTab(btn.key as any)}
-                  className={`flex items-center gap-3 p-4 rounded-2xl border text-xs font-bold transition-all text-left ${
-                    activeTab === btn.key 
-                      ? 'border-brand bg-brand/5 text-brand shadow-[0_0_15px_rgba(0,255,136,0.08)]' 
-                      : 'border-border/80 bg-bg-base/30 text-text-secondary hover:border-brand/45 hover:text-white'
+                  className={`flex items-center gap-3 p-4 rounded-2xl border text-xs font-bold transition-all text-left group ${
+                    isSelected 
+                      ? 'border-brand bg-gradient-to-r from-brand/15 via-brand/5 to-transparent text-brand shadow-[0_0_20px_rgba(0,255,136,0.12)]' 
+                      : 'border-border/80 bg-bg-base/30 text-text-secondary hover:border-brand/45 hover:text-white hover:bg-bg-base/50'
                   }`}
                 >
-                  <Icon size={16} />
-                  <span>{btn.label}</span>
+                  <Icon size={16} className={isSelected ? 'text-brand' : 'text-text-secondary group-hover:text-white transition-colors'} />
+                  <span className={isSelected ? 'text-brand' : 'text-text-secondary group-hover:text-white transition-colors'}>{btn.label}</span>
                 </button>
               );
             })}
