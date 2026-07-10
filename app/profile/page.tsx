@@ -14,7 +14,8 @@ import {
   Save, 
   Globe,
   Wallet,
-  Settings
+  Settings,
+  Lock
 } from 'lucide-react';
 
 interface BankAccount {
