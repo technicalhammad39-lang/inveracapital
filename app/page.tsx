@@ -144,7 +144,7 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="animated-gradient-border group cursor-pointer"
+              className="animated-gradient-border"
             >
               <div className="p-5 flex flex-col gap-4">
                 <div className="flex items-start justify-between">

@@ -63,13 +63,12 @@
   animation: gradient-move 3s ease infinite;
 }
 
-/* Premium Gradient Border Animated Card */
+/* Premium Gradient Border Card — Calm, Static */
 .animated-gradient-border {
   position: relative;
   background: var(--color-bg-card);
   border-radius: 1rem;
   z-index: 1;
-  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animated-gradient-border::before {
@@ -79,23 +78,17 @@
   left: -1px;
   right: -1px;
   bottom: -1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(0, 255, 136, 0.25), rgba(255, 255, 255, 0.05));
-  background-size: 200% auto;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(255, 255, 255, 0.06), rgba(0, 255, 136, 0.15));
   border-radius: 1rem;
   z-index: -1;
-  animation: gradient-move 6s linear infinite;
-  transition: opacity 0.3s;
 }
 
 .animated-gradient-border:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(0, 255, 136, 0.08);
+  /* No hover transform or glow — stays calm */
 }
 
 .animated-gradient-border:hover::before {
-  background: linear-gradient(90deg, rgba(0, 255, 136, 0.2), #00ff88, rgba(0, 255, 136, 0.2));
-  background-size: 200% auto;
-  animation: gradient-move 3s linear infinite;
+  /* No hover border color change — stays calm */
 }
 
 /* Scrollbars */
