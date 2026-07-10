@@ -192,6 +192,48 @@ export default function ReferralsPage() {
         <p className="text-text-secondary mt-1 text-sm">Build your secondary network tree to secure multi-level commission payouts.</p>
       </div>
 
+      {/* 3 Referral Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { label: 'Network Count', value: 124, badge: 'Total Enrolled', icon: Users, isPositive: true },
+          { label: 'Active Partners', value: 89, badge: 'Yield Deployers', icon: TrendingUp, isPositive: true },
+          { label: 'Total Earnings', value: 12450, badge: 'Commission Payout', icon: Award, isPositive: true, currency: true }
+        ].map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              className="animated-gradient-border group cursor-pointer"
+            >
+              <div className="p-5 flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1.5">
+                    <span className="text-text-secondary text-[10px] font-bold tracking-wider block uppercase">
+                      {stat.label}
+                    </span>
+                    <span className="bg-brand/10 text-brand border border-brand/25 shadow-[0_0_10px_rgba(0,255,136,0.05)] text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block tracking-wider uppercase">
+                      {stat.badge}
+                    </span>
+                  </div>
+                  <Icon className="w-5 h-5 text-brand transition-transform duration-300 shrink-0" />
+                </div>
+
+                <div className="flex items-end justify-between pt-2">
+                  <div className="space-y-1.5">
+                    <div className="text-2xl font-extrabold text-white tracking-tight">
+                      {stat.currency ? formatCurrency(stat.value) : stat.value}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
       {/* Hero configuration */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
@@ -203,73 +245,52 @@ export default function ReferralsPage() {
         >
           <div className="space-y-4">
             <h3 className="font-bold text-md text-white">Your Network Link</h3>
-            <p className="text-xs text-text-secondary">Distribute your code link to enroll partners. Commissions credit instantly.</p>
             
-            <div className="flex gap-2 pt-2">
-              <div className="flex-1 bg-bg-base border border-border/80 rounded-xl px-4 py-3 text-xs font-mono text-white overflow-hidden text-ellipsis whitespace-nowrap">
-                {copiedLink}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              
+              {/* Left Column: Link Copier & Instructions */}
+              <div className="md:col-span-2 space-y-4">
+                <div className="text-xs text-text-secondary leading-relaxed">
+                  <strong className="text-white font-bold block mb-1">How to invite your partners:</strong>
+                  1. Copy your unique referral code link below.<br/>
+                  2. Distribute it to your team partners or post it on social media.<br/>
+                  3. When they deposit, <strong className="text-brand font-bold">multi-level commissions</strong> will credit instantly to your referral wallet.
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-bg-base border border-border/80 rounded-xl px-4 py-3 text-xs font-mono text-white overflow-hidden text-ellipsis whitespace-nowrap flex items-center">
+                    {copiedLink}
+                  </div>
+                  <button 
+                    onClick={handleCopy}
+                    className="bg-brand text-black px-5 rounded-xl font-bold text-xs hover:bg-brand-hover active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0"
+                  >
+                    {copied ? <Check size={14} strokeWidth={2.5} /> : <Copy size={14} />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
               </div>
-              <button 
-                onClick={handleCopy}
-                className="bg-brand text-black px-4 rounded-xl font-bold text-xs hover:bg-brand-hover active:scale-95 transition-all flex items-center justify-center gap-1.5"
-              >
-                {copied ? <Check size={16} strokeWidth={2.5} /> : <Copy size={16} />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
-              </button>
-              <button 
-                onClick={() => setShowQr(!showQr)}
-                className="bg-bg-card border border-border/80 hover:border-brand/40 px-3 rounded-xl transition-all flex items-center justify-center"
-                title="Show QR Code"
-              >
-                <QrCode size={18} className="text-text-secondary" />
-              </button>
-            </div>
 
-            {/* Simulated QR modal expansion inside panel */}
-            <AnimatePresence>
-              {showQr && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden border-t border-border/50 pt-4 flex flex-col items-center gap-3"
-                >
-                  {/* SVG QR Code Simulation */}
-                  <svg className="w-32 h-32 bg-white p-2 rounded-xl" viewBox="0 0 100 100">
-                    <rect width="100" height="100" fill="#fff" />
-                    {/* Corners */}
-                    <rect x="5" y="5" width="20" height="20" fill="#000" />
-                    <rect x="9" y="9" width="12" height="12" fill="#fff" />
-                    <rect x="75" y="5" width="20" height="20" fill="#000" />
-                    <rect x="79" y="9" width="12" height="12" fill="#fff" />
-                    <rect x="5" y="75" width="20" height="20" fill="#000" />
-                    <rect x="9" y="79" width="12" height="12" fill="#fff" />
-                    {/* Random patterns */}
-                    <rect x="35" y="5" width="10" height="30" fill="#000" />
-                    <rect x="55" y="15" width="15" height="10" fill="#000" />
-                    <rect x="30" y="45" width="40" height="15" fill="#000" />
-                    <rect x="15" y="35" width="10" height="25" fill="#000" />
-                    <rect x="75" y="40" width="20" height="30" fill="#000" />
-                    <rect x="40" y="70" width="25" height="20" fill="#000" />
-                  </svg>
-                  <span className="text-[10px] text-text-secondary">Scan to sign up directly into Level 1 node</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              {/* Right Column: QR Code Display directly */}
+              <div className="flex flex-col items-center gap-2 p-3 bg-bg-base/40 border border-border/85 rounded-2xl">
+                <svg className="w-24 h-24 bg-white p-2 rounded-xl" viewBox="0 0 100 100">
+                  <rect width="100" height="100" fill="#fff" />
+                  <rect x="5" y="5" width="20" height="20" fill="#000" />
+                  <rect x="9" y="9" width="12" height="12" fill="#fff" />
+                  <rect x="75" y="5" width="20" height="20" fill="#000" />
+                  <rect x="79" y="9" width="12" height="12" fill="#fff" />
+                  <rect x="5" y="75" width="20" height="20" fill="#000" />
+                  <rect x="9" y="79" width="12" height="12" fill="#fff" />
+                  <rect x="35" y="5" width="10" height="30" fill="#000" />
+                  <rect x="55" y="15" width="15" height="10" fill="#000" />
+                  <rect x="30" y="45" width="40" height="15" fill="#000" />
+                  <rect x="15" y="35" width="10" height="25" fill="#000" />
+                  <rect x="75" y="40" width="20" height="30" fill="#000" />
+                  <rect x="40" y="70" width="25" height="20" fill="#000" />
+                </svg>
+                <span className="text-[9px] text-text-secondary text-center font-bold">L1 Sign Up QR Link</span>
+              </div>
 
-          <div className="grid grid-cols-3 gap-4 border-t border-border/60 pt-4 mt-6">
-            <div className="bg-bg-base/30 p-3 rounded-xl border border-border/80">
-              <span className="text-[10px] text-text-secondary block font-semibold mb-0.5">Network Count</span>
-              <span className="text-xl font-bold text-white">124</span>
-            </div>
-            <div className="bg-bg-base/30 p-3 rounded-xl border border-border/80">
-              <span className="text-[10px] text-text-secondary block font-semibold mb-0.5">Active Stakers</span>
-              <span className="text-xl font-bold text-brand">89</span>
-            </div>
-            <div className="bg-bg-base/30 p-3 rounded-xl border border-border/80">
-              <span className="text-[10px] text-text-secondary block font-semibold mb-0.5">Total Commission</span>
-              <span className="text-xl font-bold text-brand glow-text">{formatCurrency(12450)}</span>
             </div>
           </div>
         </motion.div>

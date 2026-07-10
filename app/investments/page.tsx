@@ -191,168 +191,82 @@ export default function Investments() {
         })}
       </div>
 
-      {/* ROI Calculator & Portfolio Allocation charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Interactive ROI Calculator */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="glass p-6 rounded-2xl flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/60">
-              <Calculator size={18} className="text-brand" />
-              <h3 className="font-bold text-md text-white">Yield Calculator</h3>
-            </div>
-            <p className="text-xs text-text-secondary mb-6">Configure custom capital allocation amounts to project returns.</p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-text-secondary block mb-2 font-medium">1. Select Strategy</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {plans.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => { setCalcPlan(p.id); setCalcAmount(p.min); }}
-                      className={`py-2 px-1 rounded-xl text-center border text-[11px] font-bold transition-all ${
-                        calcPlan === p.id 
-                          ? 'border-brand bg-brand/5 text-brand shadow-[0_0_10px_rgba(0,255,136,0.1)]' 
-                          : 'border-border bg-bg-base text-text-secondary hover:border-brand/35'
-                      }`}
-                    >
-                      {p.name.split(' ')[1] || p.name}
-                    </button>
+      {/* Strategy Allocation section */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3 }}
+        className="glass p-6 rounded-2xl max-w-4xl mx-auto"
+      >
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/60">
+          <PieIcon size={18} className="text-brand" />
+          <h3 className="font-bold text-md text-white">Strategy Allocation</h3>
+        </div>
+        <p className="text-xs text-text-secondary mb-6">Capital split across active institutional accounts.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          {/* Chart Container */}
+          <div className="h-[220px] w-full relative flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={allocationData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={65}
+                  outerRadius={85}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {allocationData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs text-text-secondary mb-2 font-medium">
-                  <span>2. Investment Principal</span>
-                  <span className="font-bold text-white">Range: {formatCurrency(selectedPlan.min)} - {formatCurrency(selectedPlan.max)}</span>
-                </div>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary text-sm font-semibold">$</span>
-                  <input 
-                    type="number" 
-                    value={calcAmount} 
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setCalcAmount(val);
-                    }}
-                    className="w-full bg-bg-base border border-border/80 rounded-xl py-3 pl-8 pr-4 outline-none focus:border-brand text-sm font-bold text-white transition-colors" 
-                  />
-                </div>
-                <input 
-                  type="range"
-                  min={selectedPlan.min}
-                  max={selectedPlan.max}
-                  step={selectedPlan.min}
-                  value={calcAmount}
-                  onChange={(e) => setCalcAmount(Number(e.target.value))}
-                  className="w-full accent-brand mt-4 cursor-pointer"
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#050505', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '12px' }}
+                  itemStyle={{ fontSize: 11, color: '#fff' }}
+                  formatter={(value) => [formatCurrency(Number(value)), 'Allocated']}
                 />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-bg-base/60 border border-border/80 p-5 rounded-2xl mt-6 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="space-y-1 text-center md:text-left">
-              <span className="text-[10px] text-text-secondary uppercase tracking-wider block font-bold">Estimated Returns ({selectedPlan.duration} days)</span>
-              <span className="text-3xl font-extrabold text-brand glow-text">
-                {formatCurrency(calculatedTotal)}
-              </span>
-            </div>
+              </PieChart>
+            </ResponsiveContainer>
             
-            <div className="grid grid-cols-2 gap-4 text-xs w-full md:w-auto border-t md:border-t-0 md:border-l border-border/60 pt-4 md:pt-0 md:pl-6">
-              <div>
-                <div className="text-text-secondary mb-0.5">Daily Profit</div>
-                <div className="font-bold text-white">{formatCurrency(calculatedDaily)}</div>
-              </div>
-              <div>
-                <div className="text-text-secondary mb-0.5">Net Gain</div>
-                <div className="font-bold text-brand">+{formatCurrency(calculatedProfit)}</div>
-              </div>
+            {/* Center text overlay with smaller text so it never overlaps */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-[9px] text-text-secondary uppercase tracking-wider font-bold">Total Active</span>
+              <span className="text-sm font-extrabold text-white tracking-tight mt-0.5">{formatCurrency(95000)}</span>
             </div>
           </div>
-        </motion.div>
 
-        {/* Portfolio Allocation Recharts & Mini stats */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          className="glass p-6 rounded-2xl flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/60">
-              <PieIcon size={18} className="text-brand" />
-              <h3 className="font-bold text-md text-white">Strategy Allocation</h3>
-            </div>
-            <p className="text-xs text-text-secondary mb-4">Capital split across active institutional accounts.</p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-              <div className="h-[180px] w-full relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={allocationData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={70}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {allocationData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#050505', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '8px' }}
-                      itemStyle={{ fontSize: 11, color: '#fff' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Center text overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] text-text-secondary uppercase">Total Active</span>
-                  <span className="text-lg font-bold text-white">{formatCurrency(95000)}</span>
+          {/* Details Legend */}
+          <div className="space-y-3">
+            {allocationData.map((d) => (
+              <div key={d.name} className="flex justify-between items-center text-xs p-3 rounded-xl bg-bg-base/40 border border-border/60 hover:border-brand/35 transition-all">
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                  <span className="text-text-primary font-bold">{d.name}</span>
                 </div>
+                <span className="font-extrabold text-white text-sm">{formatCurrency(d.value)}</span>
               </div>
-
-              <div className="space-y-2.5">
-                {allocationData.map((d) => (
-                  <div key={d.name} className="flex justify-between items-center text-xs p-2 rounded-lg bg-bg-base/30 border border-border/40">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                      <span className="text-text-secondary font-medium">{d.name.split(' ')[0]}</span>
-                    </div>
-                    <span className="font-bold text-white">{formatCurrency(d.value)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
+        </div>
 
-          <div className="grid grid-cols-3 gap-3 border-t border-border/60 pt-4 mt-4 text-center">
-            <div>
-              <div className="text-[10px] text-text-secondary mb-0.5">Average APR</div>
-              <div className="text-sm font-bold text-brand">24.5%</div>
-            </div>
-            <div>
-              <div className="text-[10px] text-text-secondary mb-0.5">Weekly Credited</div>
-              <div className="text-sm font-bold text-white">{formatCurrency(1350.25)}</div>
-            </div>
-            <div>
-              <div className="text-[10px] text-text-secondary mb-0.5">Risk Rating</div>
-              <div className="text-sm font-bold text-green-400">Low-Mod</div>
-            </div>
+        {/* Bottom stats details */}
+        <div className="grid grid-cols-3 gap-4 border-t border-border/60 pt-5 mt-6 text-center">
+          <div>
+            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-wider mb-1">Average APR</div>
+            <div className="text-base font-extrabold text-brand">24.5%</div>
           </div>
-        </motion.div>
-      </div>
+          <div>
+            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-wider mb-1">Weekly Earnings</div>
+            <div className="text-base font-extrabold text-white">{formatCurrency(1350.25)}</div>
+          </div>
+          <div>
+            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-wider mb-1">Risk Rating</div>
+            <div className="text-base font-extrabold text-green-400">Low-Mod</div>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Timeline and History Center */}
       <motion.div 

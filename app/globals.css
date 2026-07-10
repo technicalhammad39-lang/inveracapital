@@ -66,9 +66,10 @@
 /* Premium Gradient Border Animated Card */
 .animated-gradient-border {
   position: relative;
-  background: rgba(10, 10, 10, 0.7);
+  background: var(--color-bg-card);
   border-radius: 1rem;
   z-index: 1;
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animated-gradient-border::before {
@@ -78,17 +79,23 @@
   left: -1px;
   right: -1px;
   bottom: -1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(0, 255, 136, 0.3), rgba(255, 255, 255, 0.08));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(0, 255, 136, 0.25), rgba(255, 255, 255, 0.05));
   background-size: 200% auto;
   border-radius: 1rem;
   z-index: -1;
-  animation: gradient-move 4s linear infinite;
+  animation: gradient-move 6s linear infinite;
   transition: opacity 0.3s;
+}
+
+.animated-gradient-border:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 255, 136, 0.08);
 }
 
 .animated-gradient-border:hover::before {
   background: linear-gradient(90deg, rgba(0, 255, 136, 0.2), #00ff88, rgba(0, 255, 136, 0.2));
   background-size: 200% auto;
+  animation: gradient-move 3s linear infinite;
 }
 
 /* Scrollbars */

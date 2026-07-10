@@ -32,7 +32,7 @@ interface CryptoAddress {
 
 export default function ProfilePage() {
   const { formatCurrency } = useCurrency();
-  const [activeTab, setActiveTab] = useState<'info' | 'banks' | 'crypto' | 'notifs'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'banks' | 'crypto' | 'notifs' | 'security' | 'prefs' | 'verification' | 'logs'>('info');
   
   // Profile settings state
   const [name, setName] = useState('Admin User');
@@ -129,9 +129,54 @@ export default function ProfilePage() {
       {/* Title */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-text-secondary bg-clip-text text-transparent">
-          Member Settings
+          Enterprise Profile Center
         </h1>
-        <p className="text-text-secondary mt-1 text-sm">Configure personal details, link bank accounts, and edit subscription parameters.</p>
+        <p className="text-text-secondary mt-1 text-sm">Configure personal details, link bank accounts, check security ratings, and monitor access sessions.</p>
+      </div>
+
+      {/* Enterprise Profile Header Card */}
+      <div className="glass p-8 rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 border-brand/20">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-brand/5 blur-3xl pointer-events-none" />
+        
+        {/* Left Side: Avatar & Badges */}
+        <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+          <div className="relative">
+            {/* Centered avatar with pulsing glowing ring */}
+            <div className="w-24 h-24 rounded-full bg-slate-900 border-2 border-brand/40 flex items-center justify-center text-2xl font-black text-white relative z-10 shadow-[0_0_20px_rgba(0,255,136,0.15)]">
+              AU
+            </div>
+            <div className="absolute inset-0 rounded-full border-2 border-brand/30 animate-ping opacity-25" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-white tracking-tight">Admin User</h2>
+            
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+              <span className="text-[10px] bg-gradient-to-r from-emerald-500/20 to-brand/10 text-brand border border-brand/35 shadow-[0_0_10px_rgba(0,255,136,0.1)] px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                Platinum VIP Member
+              </span>
+              <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/25 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
+                <CheckCircle2 size={11} className="text-brand" /> KYC Tier 2 Verified
+              </span>
+            </div>
+            
+            <p className="text-xs text-text-secondary">Member since: <strong className="text-white">Jan 12, 2026</strong> • UID: <strong className="text-white font-mono">INV-849201</strong></p>
+          </div>
+        </div>
+
+        {/* Right Side: Profile Completion Meter */}
+        <div className="w-full md:max-w-xs space-y-2 border-t md:border-t-0 md:border-l border-border/60 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
+          <div className="flex justify-between text-xs font-bold text-white">
+            <span>Profile Completion</span>
+            <span className="text-brand">85%</span>
+          </div>
+          <div className="w-full bg-bg-base h-2 rounded-full overflow-hidden border border-border/80">
+            <div className="bg-brand h-full rounded-full" style={{ width: '85%' }} />
+          </div>
+          <p className="text-[10px] text-text-secondary leading-normal">
+            💡 Add a backup security 2FA key or crypto payout address to hit 100% security rating.
+          </p>
+        </div>
       </div>
 
       {/* Main navigation configuration grid */}
@@ -140,10 +185,14 @@ export default function ProfilePage() {
         {/* Navigation Sidebar Panel (left) */}
         <div className="flex flex-col gap-2">
           {[
-            { key: 'info', label: 'Personal Details', icon: User },
+            { key: 'info', label: 'Personal Info', icon: User },
+            { key: 'security', label: 'Security & 2FA', icon: Lock },
             { key: 'banks', label: 'Bank Accounts', icon: Building },
-            { key: 'crypto', label: 'Crypto Addresses', icon: Coins },
-            { key: 'notifs', label: 'Notification Settings', icon: Bell }
+            { key: 'crypto', label: 'Crypto Wallets', icon: Coins },
+            { key: 'notifs', label: 'Notifications', icon: Bell },
+            { key: 'prefs', label: 'Preferences', icon: Settings },
+            { key: 'verification', label: 'Verification (KYC)', icon: CheckCircle2 },
+            { key: 'logs', label: 'Activity Logs', icon: Globe }
           ].map((item) => {
             const Icon = item.icon;
             return (
@@ -448,6 +497,180 @@ export default function ProfilePage() {
                       </div>
                     );
                   })}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'security' && (
+              <motion.div 
+                key="security"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <div className="pb-2 border-b border-border/60">
+                  <h3 className="font-bold text-md text-white font-sans">Security settings</h3>
+                  <p className="text-[11px] text-text-secondary mt-0.5">Manage passwords, withdrawal PINs, and Two-Factor Authentication.</p>
+                </div>
+
+                <div className="space-y-5 text-xs">
+                  {/* Change Password */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-text-secondary font-semibold">New Password</label>
+                      <input type="password" placeholder="••••••••" className="w-full bg-bg-base border border-border/80 rounded-xl py-3 px-4 outline-none focus:border-brand text-white transition-colors" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-text-secondary font-semibold">Confirm Password</label>
+                      <input type="password" placeholder="••••••••" className="w-full bg-bg-base border border-border/80 rounded-xl py-3 px-4 outline-none focus:border-brand text-white transition-colors" />
+                    </div>
+                  </div>
+
+                  {/* 2FA Setup */}
+                  <div className="bg-bg-base/30 border border-border p-5 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-white text-sm">Two-Factor Authentication (2FA)</h4>
+                      <p className="text-[10px] text-text-secondary leading-normal max-w-md">Boost login authentication protocols by verifying accounts via Google Authenticator credentials.</p>
+                    </div>
+                    <button className="bg-brand text-black font-extrabold text-[10px] px-4 py-2 rounded-xl hover:bg-brand-hover transition-all uppercase tracking-wider">
+                      Enable 2FA
+                    </button>
+                  </div>
+
+                  {/* Withdrawal PIN */}
+                  <div className="bg-bg-base/30 border border-border p-5 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-white text-sm">Security withdrawal PIN</h4>
+                      <p className="text-[10px] text-text-secondary leading-normal max-w-md">Configure 4-digit code required to authorize internal balance transfers or payout dispatches.</p>
+                    </div>
+                    <button className="border border-border hover:border-brand/40 bg-bg-base text-white font-extrabold text-[10px] px-4 py-2 rounded-xl transition-all uppercase tracking-wider">
+                      Reset PIN
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'prefs' && (
+              <motion.div 
+                key="prefs"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <div className="pb-2 border-b border-border/60">
+                  <h3 className="font-bold text-md text-white font-sans">User Preferences</h3>
+                  <p className="text-[11px] text-text-secondary mt-0.5">Adjust client configurations, default currencies, and UI settings.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div className="space-y-1.5">
+                    <label className="text-text-secondary font-semibold">Base Valuation Currency</label>
+                    <select className="w-full bg-bg-base border border-border/80 rounded-xl py-3 px-3 outline-none focus:border-brand text-white font-semibold cursor-pointer">
+                      <option>USD ($)</option>
+                      <option>EUR (€)</option>
+                      <option>GBP (£)</option>
+                      <option>PKR (Rs.)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-text-secondary font-semibold">Locale & Language</label>
+                    <select className="w-full bg-bg-base border border-border/80 rounded-xl py-3 px-3 outline-none focus:border-brand text-white font-semibold cursor-pointer">
+                      <option>English (United States)</option>
+                      <option>Spanish (ES)</option>
+                      <option>Urdu (PK)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-2">
+                    <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-bg-base/30">
+                      <div className="space-y-1 pr-6">
+                        <span className="font-bold text-white block">Auto-Lock Dashboard Sessions</span>
+                        <span className="text-[10px] text-text-secondary block">Lock dashboard viewport after 15 minutes of inactivity.</span>
+                      </div>
+                      <div className="w-10 h-6.5 rounded-full p-1 bg-brand shrink-0 flex items-center">
+                        <div className="w-4.5 h-4.5 rounded-full bg-black translate-x-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'verification' && (
+              <motion.div 
+                key="verification"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <div className="pb-2 border-b border-border/60">
+                  <h3 className="font-bold text-md text-white font-sans">Identity verification checks (KYC)</h3>
+                  <p className="text-[11px] text-text-secondary mt-0.5">Upload international passports or utility bills to unlock higher tier ceilings.</p>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  <div className="bg-emerald-950/20 border border-brand/20 p-5 rounded-2xl flex items-start gap-4">
+                    <CheckCircle2 className="text-brand shrink-0 w-6 h-6" />
+                    <div className="space-y-1.5">
+                      <h4 className="font-extrabold text-white text-sm">KYC Verified Tier 2 Account Status</h4>
+                      <p className="text-text-secondary leading-relaxed">You have cleared all verification controls. Account withdrawal ceilings expanded.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="border border-border bg-bg-base/30 p-4 rounded-xl flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="font-bold text-white block">1. Identity Verification</span>
+                        <span className="text-[10px] text-text-secondary">International Passport or National ID.</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded uppercase">Verified</span>
+                    </div>
+
+                    <div className="border border-border bg-bg-base/30 p-4 rounded-xl flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="font-bold text-white block">2. Address Utility Check</span>
+                        <span className="text-[10px] text-text-secondary">Recent bank records, gas, or electricity billing receipts.</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded uppercase">Verified</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'logs' && (
+              <motion.div 
+                key="logs"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <div className="pb-2 border-b border-border/60">
+                  <h3 className="font-bold text-md text-white font-sans">Activity Log history</h3>
+                  <p className="text-[11px] text-text-secondary mt-0.5">Audit log records of operations, dispatches, and login sessions.</p>
+                </div>
+
+                <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
+                  {[
+                    { event: 'User login session authorized', device: 'Chrome / Windows 11', ip: '182.176.12.84', time: 'Today, 10:45 AM' },
+                    { event: 'Saved bank account b1 modified', device: 'Vercel Server Dispatch', ip: 'IP Lookup Shield', time: 'Yesterday, 14:15 PM' },
+                    { event: 'Withdrawal dispatch security auth', device: 'Google Auth 2FA API', ip: '182.176.12.84', time: 'Oct 24, 2026, 11:20 AM' },
+                    { event: 'Vault crypt keys updated', device: 'System Ledger Sync', ip: 'Vault Core Protocol', time: 'Oct 20, 2026, 09:00 AM' }
+                  ].map((log, idx) => (
+                    <div key={idx} className="flex justify-between items-center bg-bg-base/30 border border-border p-3.5 rounded-xl text-[11px]">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-white block">{log.event}</span>
+                        <span className="text-[10px] text-text-secondary block">{log.device} • IP: <strong className="text-white font-mono">{log.ip}</strong></span>
+                      </div>
+                      <span className="text-[10px] text-text-secondary shrink-0 font-medium">{log.time}</span>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}

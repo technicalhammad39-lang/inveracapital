@@ -17,7 +17,8 @@ import {
   ExternalLink,
   Plus,
   Send,
-  Sparkles
+  Sparkles,
+  ChevronRight
 } from 'lucide-react';
 import {
   AreaChart,
@@ -113,21 +114,21 @@ export default function Dashboard() {
       {/* Top Welcome Title Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="bg-brand/10 border border-brand/20 text-brand text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,255,136,0.1)]">
-              <Sparkles size={10} /> Enterprise Tier Active
-            </span>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight mt-2 bg-gradient-to-r from-white to-text-secondary bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-text-secondary bg-clip-text text-transparent">
             Executive Summary
           </h1>
           <p className="text-text-secondary mt-1 text-sm">Welcome back, Admin. Your institutional dashboard is fully synched.</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/wallet">
-            <button className="bg-brand text-black font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-brand-hover active:scale-95 transition-all shadow-[0_0_15px_rgba(0,255,136,0.3)] flex items-center gap-2">
+          <Link href="/wallet?action=deposit">
+            <button className="h-11 bg-brand text-black font-semibold text-sm px-5 rounded-xl hover:bg-brand-hover active:scale-95 transition-all shadow-[0_0_15px_rgba(0,255,136,0.25)] flex items-center justify-center gap-2">
               <Plus size={16} strokeWidth={2.5} /> Deposit Funds
+            </button>
+          </Link>
+          <Link href="/wallet?action=withdraw">
+            <button className="h-11 bg-bg-card border border-border/80 hover:border-brand/40 text-text-primary hover:text-white font-semibold text-sm px-5 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+              <ArrowUpRight size={16} strokeWidth={2.5} /> Withdraw Funds
             </button>
           </Link>
         </div>
@@ -147,23 +148,23 @@ export default function Dashboard() {
             >
               <div className="p-5 flex flex-col gap-4">
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <span className="text-text-secondary text-xs font-semibold tracking-wide block uppercase">
+                  <div className="space-y-1.5">
+                    <span className="text-text-secondary text-[10px] font-bold tracking-wider block uppercase">
                       {stat.label}
                     </span>
                     <span className={clsx(
-                      "text-[9px] font-bold px-2 py-0.5 rounded-full inline-block tracking-wider uppercase",
-                      stat.isPositive ? "bg-brand/10 text-brand border border-brand/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                      "text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block tracking-wider uppercase border",
+                      stat.isPositive ? "bg-brand/10 text-brand border-brand/25 shadow-[0_0_10px_rgba(0,255,136,0.05)]" : "bg-rose-500/10 text-rose-400 border-rose-500/25"
                     )}>
                       {stat.badge}
                     </span>
                   </div>
-                  <Icon className="w-5 h-5 text-brand group-hover:scale-110 transition-transform duration-300" />
+                  <Icon className="w-5 h-5 text-brand transition-transform duration-300 shrink-0" />
                 </div>
 
                 <div className="flex items-end justify-between pt-2">
                   <div className="space-y-1.5">
-                    <div className="text-2.5xl font-extrabold text-white tracking-tight">
+                    <div className="text-2xl font-extrabold text-white tracking-tight">
                       <AnimatedCounter 
                         value={stat.value} 
                         formatter={(val) => formatCurrency(val)} 
@@ -256,33 +257,71 @@ export default function Dashboard() {
               </Link>
             </div>
             
+            {/* Redesigned Active Allocations */}
             <div className="space-y-4">
               {[
-                { name: 'Institutional Alpha V', progress: 75, days: 12, rate: '1.5%' },
-                { name: 'Wealth Builder Pro II', progress: 45, days: 45, rate: '2.0%' }
-              ].map((inv, idx) => (
-                <div key={inv.name} className="bg-bg-card/40 border border-border/80 p-4 rounded-xl space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="font-bold text-sm block text-text-primary">{inv.name}</span>
-                      <span className="text-[10px] text-text-secondary">Yield: {inv.rate} Daily</span>
+                { name: 'Institutional Alpha V', progress: 75, days: 12, rate: '1.5%', principal: 25000, earned: 4250, maturity: 'Oct 22, 2026', icon: Zap },
+                { name: 'Wealth Builder Pro II', progress: 45, days: 45, rate: '2.0%', principal: 10000, earned: 1800, maturity: 'Nov 24, 2026', icon: TrendingUp }
+              ].map((inv, idx) => {
+                const PlanIcon = inv.icon;
+                return (
+                  <div 
+                    key={inv.name} 
+                    className="bg-gradient-to-br from-white via-emerald-50 to-brand-hover p-4 rounded-2xl shadow-xl flex flex-col justify-between border border-white/20 text-slate-900 gap-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-slate-900/10 flex items-center justify-center text-slate-800">
+                          <PlanIcon size={16} />
+                        </div>
+                        <div>
+                          <span className="font-extrabold text-xs block text-slate-900 tracking-tight leading-tight">{inv.name}</span>
+                          <span className="text-[9px] text-slate-700 font-bold uppercase tracking-wider">ROI: {inv.rate} Daily</span>
+                        </div>
+                      </div>
+                      <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-slate-900 text-white rounded-full uppercase tracking-wider">
+                        Earning
+                      </span>
                     </div>
-                    <span className="text-brand text-[10px] font-bold px-2 py-0.5 bg-brand/10 border border-brand/20 rounded-full">
-                      Earning
-                    </span>
+                    
+                    <div className="grid grid-cols-2 gap-y-2 gap-x-2 border-y border-slate-900/10 py-2.5 text-[11px]">
+                      <div>
+                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Invested</span>
+                        <span className="font-extrabold text-slate-900">{formatCurrency(inv.principal)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Earnings</span>
+                        <span className="font-extrabold text-emerald-800">{formatCurrency(inv.earned)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Expected Maturity</span>
+                        <span className="font-semibold text-slate-800">{inv.maturity}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Remaining</span>
+                        <span className="font-semibold text-slate-800">{inv.days} Days</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="w-full bg-slate-900/10 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-slate-900 h-full rounded-full" style={{ width: `${inv.progress}%` }}></div>
+                      </div>
+                      <div className="flex justify-between text-[8px] font-bold text-slate-600">
+                        <span>Progress: {inv.progress}%</span>
+                        <span>{inv.days} days left</span>
+                      </div>
+                    </div>
+
+                    <Link href="/investments" className="w-full">
+                      <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] py-2 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-1">
+                        <span>More Details</span>
+                        <ChevronRight size={12} />
+                      </button>
+                    </Link>
                   </div>
-                  
-                  <div className="space-y-1">
-                    <div className="w-full bg-border h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-brand h-full rounded-full" style={{ width: `${inv.progress}%` }}></div>
-                    </div>
-                    <div className="flex justify-between text-[10px] text-text-secondary">
-                      <span>Progress: {inv.progress}%</span>
-                      <span>{inv.days} days remaining</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -320,7 +359,8 @@ export default function Dashboard() {
           </Link>
         </div>
         
-        <div className="overflow-x-auto custom-scrollbar">
+        {/* Desktop View Table */}
+        <div className="hidden md:block overflow-x-auto custom-scrollbar">
           <table className="w-full text-xs text-left min-w-[600px]">
             <thead className="text-text-secondary bg-bg-base/40 uppercase tracking-wider text-[10px] font-bold">
               <tr>
@@ -339,29 +379,35 @@ export default function Dashboard() {
                 { type: 'Withdrawal', amount: 1200, date: 'Oct 24, 2026', status: 'Pending', positive: false, id: 'TXN-820491', method: 'Bank Transfer' },
                 { type: 'Lottery Entry', amount: 50, date: 'Oct 22, 2026', status: 'Completed', positive: false, id: 'TXN-794502', method: 'Referral Bonus' },
               ].map((tx, idx) => (
-                <tr key={idx} className="hover:bg-white/[0.01] transition-colors">
+                <tr key={idx} className="hover:bg-white/[0.02] border-l-2 border-transparent hover:border-brand transition-all">
                   <td className="px-6 py-4 flex items-center gap-3">
                     <div className={clsx(
                       "w-8 h-8 rounded-full flex items-center justify-center border",
-                      tx.positive ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-rose-500/5 border-rose-500/10 text-rose-400'
+                      tx.type === 'Deposit' ? 'bg-brand/10 border-brand/20 text-brand' : 
+                      tx.type === 'Withdrawal' ? 'bg-rose-500/5 border-rose-500/10 text-rose-400' : 
+                      'bg-white/5 border-border text-white'
                     )}>
-                      {tx.positive ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
+                      {tx.type === 'Deposit' ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
                     </div>
                     <span className="font-bold text-text-primary">{tx.type}</span>
                   </td>
                   <td className="px-6 py-4 font-mono text-[11px] text-text-secondary">{tx.id}</td>
                   <td className={clsx(
                     "px-6 py-4 font-bold text-sm",
-                    tx.positive ? 'text-brand' : 'text-text-primary'
+                    tx.type === 'Deposit' ? 'text-brand' : 
+                    tx.type === 'Withdrawal' ? 'text-rose-400' : 'text-white'
                   )}>
-                    {tx.positive ? '+' : '-'}{formatCurrency(tx.amount)}
+                    {tx.type === 'Deposit' ? '+' : tx.type === 'Withdrawal' ? '-' : ''}{formatCurrency(tx.amount)}
                   </td>
                   <td className="px-6 py-4 text-text-secondary">{tx.date}</td>
                   <td className="px-6 py-4 text-text-secondary">{tx.method}</td>
                   <td className="px-6 py-4 text-right">
                     <span className={clsx(
                       "px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider border",
-                      tx.status === 'Completed' ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                      tx.status === 'Completed' ? 'bg-brand/10 border-brand/25 text-brand shadow-[0_0_10px_rgba(0,255,136,0.05)]' : 
+                      tx.status === 'Pending' ? 'bg-white/5 border-white/20 text-white' : 
+                      tx.status === 'Rejected' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                      'bg-amber-500/10 border-amber-500/20 text-amber-400'
                     )}>
                       {tx.status}
                     </span>
@@ -371,7 +417,58 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile View Cards */}
+        <div className="block md:hidden divide-y divide-border/60">
+          {[
+            { type: 'Deposit', amount: 5000, date: 'Today, 10:45 AM', status: 'Completed', positive: true, id: 'TXN-902418', method: 'USDT (TRC20)' },
+            { type: 'ROI Credit', amount: 150.5, date: 'Yesterday, 12:00 PM', status: 'Completed', positive: true, id: 'TXN-890251', method: 'Internal Compound' },
+            { type: 'Withdrawal', amount: 1200, date: 'Oct 24, 2026', status: 'Pending', positive: false, id: 'TXN-820491', method: 'Bank Transfer' },
+            { type: 'Lottery Entry', amount: 50, date: 'Oct 22, 2026', status: 'Completed', positive: false, id: 'TXN-794502', method: 'Referral Bonus' },
+          ].map((tx, idx) => (
+            <div key={idx} className="p-4 space-y-3 hover:bg-white/[0.01] transition-all">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className={clsx(
+                    "w-7 h-7 rounded-full flex items-center justify-center border",
+                    tx.type === 'Deposit' ? 'bg-brand/10 border-brand/20 text-brand' : 
+                    tx.type === 'Withdrawal' ? 'bg-rose-500/5 border-rose-500/10 text-rose-400' : 
+                    'bg-white/5 border-border text-white'
+                  )}>
+                    {tx.type === 'Deposit' ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />}
+                  </div>
+                  <span className="font-bold text-text-primary text-xs">{tx.type}</span>
+                </div>
+                <span className={clsx(
+                  "px-2 py-0.5 text-[9px] font-bold rounded-full uppercase tracking-wider border",
+                  tx.status === 'Completed' ? 'bg-brand/10 border-brand/25 text-brand' : 
+                  tx.status === 'Pending' ? 'bg-white/5 border-white/20 text-white' : 
+                  tx.status === 'Rejected' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                  'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                )}>
+                  {tx.status}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-text-secondary font-mono">{tx.id}</span>
+                <span className={clsx(
+                  "font-bold text-sm",
+                  tx.type === 'Deposit' ? 'text-brand' : 
+                  tx.type === 'Withdrawal' ? 'text-rose-400' : 'text-white'
+                )}>
+                  {tx.type === 'Deposit' ? '+' : tx.type === 'Withdrawal' ? '-' : ''}{formatCurrency(tx.amount)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-[10px] text-text-secondary">
+                <span>{tx.date}</span>
+                <span>{tx.method}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </motion.div>
+    </div>
+  );
     </div>
   );
 }

@@ -91,12 +91,12 @@ export function Sidebar() {
     <motion.div 
       animate={{ width: isCollapsed ? 80 : 260 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="border-r border-border h-screen sticky top-0 bg-bg-base/90 backdrop-blur-xl flex flex-col pt-6 pb-4 px-3 hidden lg:flex shrink-0 z-40 overflow-hidden"
+      className="border-r border-border h-screen sticky top-0 bg-gradient-to-b from-bg-base/95 to-bg-card/95 backdrop-blur-xl flex flex-col pt-6 pb-4 px-3 hidden lg:flex shrink-0 z-40 overflow-hidden"
     >
-      {/* Premium Logo */}
+      {/* Premium Logo & Collapse Control */}
       <div className={clsx(
-        "flex items-center gap-3 px-2 mb-8 transition-all duration-300",
-        isCollapsed ? "justify-center" : "justify-between"
+        "flex items-center px-2 mb-8 transition-all duration-300",
+        isCollapsed ? "flex-col gap-4 justify-center" : "justify-between"
       )}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-hover shadow-[0_0_15px_rgba(0,255,136,0.4)] flex items-center justify-center relative group shrink-0">
@@ -113,6 +113,15 @@ export function Sidebar() {
             </motion.span>
           )}
         </div>
+        
+        {/* Collapse Button beside Logo */}
+        <button 
+          onClick={toggleCollapse}
+          className="text-text-secondary hover:text-text-primary p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+          title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
+        >
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
       </div>
 
       {/* Navigation List - Custom Scrollbar */}
@@ -185,18 +194,6 @@ export function Sidebar() {
 
       {/* Footer Area */}
       <div className="mt-auto pt-4 border-t border-border/60 space-y-1">
-        <button 
-          onClick={toggleCollapse}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-text-primary hover:bg-white/[0.02] transition-colors"
-        >
-          {isCollapsed ? <ChevronRight size={19} className="mx-auto" /> : (
-            <>
-              <ChevronLeft size={19} />
-              <span className="text-[13px] font-medium">Collapse Menu</span>
-            </>
-          )}
-        </button>
-
         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-rose-400 hover:bg-rose-500/5 transition-colors text-left">
           <LogOut size={19} className={clsx(isCollapsed && "mx-auto")} />
           {!isCollapsed && <span className="text-[13px] font-medium">Logout Account</span>}

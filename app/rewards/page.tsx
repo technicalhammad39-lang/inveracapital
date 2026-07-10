@@ -147,37 +147,40 @@ export default function RewardsPage() {
             {mockAchievements.map((ach) => {
               const pct = Math.min((ach.current / ach.target) * 100, 100);
               const isCleared = pct === 100;
-              
               return (
-                <div key={ach.id} className="bg-bg-base/30 border border-border/80 p-4.5 rounded-xl space-y-3 relative hover:border-brand/40 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-0.5">
-                      <span className="text-[9px] font-bold text-brand uppercase tracking-wider px-2 py-0.5 bg-brand/10 border border-brand/20 rounded-full inline-block mb-1.5">{ach.category}</span>
-                      <h4 className="font-bold text-sm text-white">{ach.title}</h4>
-                      <p className="text-xs text-text-secondary leading-normal">{ach.desc}</p>
+                <div key={ach.id} className="bg-bg-base/30 border border-border/80 p-5 rounded-2xl flex flex-col md:flex-row justify-between md:items-center gap-6 hover:border-brand/40 transition-colors">
+                  <div className="space-y-1 flex-1">
+                    <h4 className="font-extrabold text-sm text-white">{ach.title}</h4>
+                    <p className="text-xs text-text-secondary leading-normal">{ach.desc}</p>
+                    
+                    {/* Progress details */}
+                    <div className="space-y-1.5 pt-3 max-w-md">
+                      <div className="w-full bg-border h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-brand h-full rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="flex justify-between text-[10px] font-bold text-text-secondary">
+                        <span>Progress: {pct.toFixed(0)}%</span>
+                        <span>{ach.current.toLocaleString()} / {ach.target.toLocaleString()}</span>
+                      </div>
                     </div>
+                  </div>
 
+                  <div className="shrink-0 flex flex-col items-end gap-2 justify-center">
                     <div className="text-right">
-                      <span className="text-[10px] text-text-secondary block">Bonus Yield</span>
-                      <span className="font-black text-brand text-sm">+{formatCurrency(ach.reward)}</span>
+                      <span className="text-[10px] text-text-secondary block font-bold">Reward Payout</span>
+                      <span className="font-extrabold text-brand text-sm">+{formatCurrency(ach.reward)}</span>
                     </div>
-                  </div>
 
-                  <div className="space-y-1">
-                    <div className="w-full bg-border h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-brand h-full rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                    <div className="flex justify-between text-[9px] font-bold text-text-secondary">
-                      <span>Progress: {pct.toFixed(0)}%</span>
-                      <span>{ach.current.toLocaleString()} / {ach.target.toLocaleString()}</span>
-                    </div>
+                    {isCleared ? (
+                      <button className="bg-brand text-black font-extrabold text-[10px] px-3.5 py-1.5 rounded-lg hover:bg-brand-hover shadow-[0_0_10px_rgba(0,255,136,0.2)] transition-all uppercase tracking-wider">
+                        Claim Reward
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1 text-[9px] font-extrabold px-2.5 py-1.5 bg-bg-base border border-border/60 text-text-secondary/60 rounded-lg uppercase tracking-wider">
+                        <Lock size={10} /> Locked
+                      </div>
+                    )}
                   </div>
-
-                  {isCleared && (
-                    <div className="absolute top-2 right-2 bg-brand/10 text-brand border border-brand/20 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase">
-                      Cleared
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -196,20 +199,26 @@ export default function RewardsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               {[
-                { name: 'First Seed', desc: 'Made first deposit', unlocked: true, icon: Star, color: 'text-brand border-brand/35 bg-brand/5' },
-                { name: 'Yield Master', desc: 'Total ROI $10k+', unlocked: true, icon: Flame, color: 'text-blue-400 border-blue-500/25 bg-blue-500/5' },
-                { name: 'Network Boss', desc: 'Total Team 100+', unlocked: true, icon: Award, color: 'text-purple-400 border-purple-500/25 bg-purple-500/5' },
-                { name: 'Millionaire', desc: 'Balance $1M+', unlocked: false, icon: Lock, color: 'text-text-secondary/40 border-border/50 bg-bg-base/30' }
+                { name: 'First Seed', desc: 'Made first deposit', unlocked: true, icon: Star, gradient: 'from-brand/10 to-emerald-950/20 border-brand/25 text-brand shadow-[0_0_15px_rgba(0,255,136,0.05)]' },
+                { name: 'Yield Master', desc: 'Total ROI $10k+', unlocked: true, icon: Flame, gradient: 'from-blue-500/10 to-blue-950/20 border-blue-500/20 text-blue-400' },
+                { name: 'Network Boss', desc: 'Total Team 100+', unlocked: true, icon: Award, gradient: 'from-purple-500/10 to-purple-950/20 border-purple-500/20 text-purple-400' },
+                { name: 'Millionaire', desc: 'Balance $1M+', unlocked: false, icon: Lock, gradient: 'from-bg-base/30 to-bg-base/10 border-border/80 text-text-secondary/50' }
               ].map((bdg) => {
                 const Icon = bdg.icon;
                 return (
                   <div 
                     key={bdg.name}
-                    className={`p-3.5 rounded-xl border flex flex-col items-center text-center ${bdg.color}`}
+                    className={`p-5 rounded-2xl border flex flex-col items-center text-center relative overflow-hidden transition-all hover:scale-102 bg-gradient-to-b ${bdg.gradient}`}
                   >
-                    <Icon size={20} className="mb-2 shrink-0" />
-                    <span className="font-bold text-xs text-white block truncate w-full">{bdg.name}</span>
-                    <span className="text-[8px] text-text-secondary mt-0.5 leading-normal block">{bdg.desc}</span>
+                    {/* Illustration background ring */}
+                    <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full border border-white/[0.03] pointer-events-none" />
+                    
+                    <div className="w-12 h-12 rounded-full bg-bg-base border border-border flex items-center justify-center mb-3 shadow-inner relative z-10 shrink-0">
+                      <Icon size={20} className="shrink-0" />
+                    </div>
+
+                    <span className="font-extrabold text-xs text-white block truncate w-full relative z-10">{bdg.name}</span>
+                    <span className="text-[9px] text-text-secondary mt-1 leading-normal block relative z-10">{bdg.desc}</span>
                   </div>
                 );
               })}
