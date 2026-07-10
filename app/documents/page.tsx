@@ -85,10 +85,10 @@ export default function DocumentsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         
         {/* Left Side Vector (decoration) */}
-        <div className="glass p-6 rounded-3xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div className="glass p-6 rounded-3xl flex flex-col items-center justify-center text-center relative overflow-hidden h-full">
           <div className="absolute inset-0 bg-brand/5 blur-3xl pointer-events-none" />
           <DocumentVector className="w-40 h-40 animate-pulse-slow" />
           <div className="space-y-1 relative z-10">
@@ -98,7 +98,7 @@ export default function DocumentsPage() {
         </div>
 
         {/* Tab Interface detail (right panel spans 2 columns) */}
-        <div className="glass p-6 rounded-3xl lg:col-span-2 min-h-[300px] flex flex-col justify-between">
+        <div className="glass p-6 rounded-3xl lg:col-span-2 flex flex-col justify-between h-full">
           <AnimatePresence mode="wait">
             
             {/* KYC Center */}

@@ -27,6 +27,11 @@ const tiers = [
     color: 'text-slate-400',
     border: 'border-slate-500/20',
     bg: 'rgba(148, 163, 184, 0.05)',
+    selectedBorder: 'border-slate-400/80',
+    selectedBg: 'bg-slate-400/10',
+    selectedGlow: '#94a3b8',
+    shadow: 'shadow-[0_0_20px_rgba(148,163,184,0.25)]',
+    badgeColor: 'bg-slate-400/10 text-slate-400 border-slate-400/20'
   },
   {
     id: 'gold',
@@ -39,7 +44,12 @@ const tiers = [
     color: 'text-yellow-400',
     border: 'border-yellow-500/20',
     bg: 'rgba(250, 204, 21, 0.05)',
-    active: true
+    selectedBorder: 'border-yellow-400/80',
+    selectedBg: 'bg-yellow-400/10',
+    selectedGlow: '#facc15',
+    shadow: 'shadow-[0_0_20px_rgba(250,204,21,0.25)]',
+    active: true,
+    badgeColor: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20'
   },
   {
     id: 'platinum',
@@ -51,7 +61,12 @@ const tiers = [
     manager: 'Assigned Executive',
     color: 'text-teal-400',
     border: 'border-teal-500/20',
-    bg: 'rgba(20, 184, 166, 0.05)'
+    bg: 'rgba(20, 184, 166, 0.05)',
+    selectedBorder: 'border-teal-400/80',
+    selectedBg: 'bg-teal-400/10',
+    selectedGlow: '#14b8a6',
+    shadow: 'shadow-[0_0_20px_rgba(20,184,166,0.25)]',
+    badgeColor: 'bg-teal-400/10 text-teal-400 border-teal-400/20'
   },
   {
     id: 'diamond',
@@ -63,7 +78,12 @@ const tiers = [
     manager: 'Private Banker',
     color: 'text-blue-400',
     border: 'border-blue-500/20',
-    bg: 'rgba(59, 130, 246, 0.05)'
+    bg: 'rgba(59, 130, 246, 0.05)',
+    selectedBorder: 'border-blue-400/80',
+    selectedBg: 'bg-blue-400/10',
+    selectedGlow: '#3b82f6',
+    shadow: 'shadow-[0_0_20px_rgba(59,130,246,0.25)]',
+    badgeColor: 'bg-blue-400/10 text-blue-400 border-blue-400/20'
   },
   {
     id: 'elite',
@@ -75,7 +95,12 @@ const tiers = [
     manager: 'Board of Advisory',
     color: 'text-purple-400',
     border: 'border-purple-500/20',
-    bg: 'rgba(168, 85, 247, 0.05)'
+    bg: 'rgba(168, 85, 247, 0.05)',
+    selectedBorder: 'border-purple-400/80',
+    selectedBg: 'bg-purple-400/10',
+    selectedGlow: '#a855f7',
+    shadow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]',
+    badgeColor: 'bg-purple-400/10 text-purple-400 border-purple-400/20'
   }
 ];
 
@@ -147,12 +172,14 @@ export default function VipPage() {
               onClick={() => setSelectedTier(t.id)}
               className={`p-5 rounded-2xl border cursor-pointer flex flex-col justify-between min-h-[170px] transition-all relative ${
                 selectedTier === t.id 
-                  ? 'border-brand bg-brand/5 shadow-[0_0_15px_rgba(0,255,136,0.1)]' 
+                  ? `${t.selectedBorder} ${t.selectedBg} ${t.shadow}` 
                   : 'border-border/80 bg-bg-base/30 hover:border-brand/40'
               }`}
             >
               {t.active && (
-                <span className="absolute top-2.5 right-2.5 text-[8px] bg-brand text-black font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                <span className={`absolute top-2.5 right-2.5 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                  selectedTier === t.id ? t.badgeColor : 'bg-brand/10 text-brand border-brand/20'
+                }`}>
                   Active
                 </span>
               )}
@@ -166,7 +193,7 @@ export default function VipPage() {
               <div className="border-t border-border/40 pt-3 mt-4 flex justify-between items-end">
                 <div>
                   <span className="text-[9px] text-text-secondary block">ROI Booster</span>
-                  <span className="text-xs font-bold text-brand">{t.roiBoost}</span>
+                  <span className={`text-xs font-bold transition-colors ${selectedTier === t.id ? t.color : 'text-brand'}`}>{t.roiBoost}</span>
                 </div>
                 <ChevronRight size={14} className="text-text-secondary" />
               </div>
@@ -204,9 +231,10 @@ export default function VipPage() {
               {tiers.map((t) => (
                 <tr 
                   key={t.id}
-                  className={`hover:bg-white/[0.01] transition-colors ${
-                    selectedTier === t.id ? 'bg-brand/[0.02] border-brand/20' : ''
+                  className={`hover:bg-white/[0.01] transition-all ${
+                    selectedTier === t.id ? 'bg-white/[0.02]' : ''
                   }`}
+                  style={selectedTier === t.id ? { borderLeft: `3px solid ${t.selectedGlow}` } : {}}
                 >
                   <td className="px-6 py-4 font-bold">{t.name}</td>
                   <td className="px-6 py-4 text-text-secondary font-semibold">{formatCurrency(t.requirement)}</td>
