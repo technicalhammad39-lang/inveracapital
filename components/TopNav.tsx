@@ -118,6 +118,7 @@ export function TopNav() {
   ];
 
   return (
+    <>
     <header className="h-20 border-b border-border bg-bg-base/80 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-6 md:px-8">
       {/* Left Search Bar / Mobile toggle */}
       <div className="flex items-center gap-4 flex-1">
@@ -396,6 +397,7 @@ export function TopNav() {
         </div>
 
       </div>
+    </header>
 
       {/* Mobile Menu Drawer */}
       <AnimatePresence>
@@ -407,7 +409,7 @@ export function TopNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
             />
 
             {/* Sidebar content */}
@@ -416,7 +418,7 @@ export function TopNav() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 bottom-0 left-0 w-72 bg-bg-base border-r border-border z-50 p-5 flex flex-col lg:hidden"
+              className="fixed top-0 bottom-0 left-0 w-72 bg-bg-base border-r border-border z-[100] p-5 flex flex-col lg:hidden"
             >
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -466,7 +468,6 @@ export function TopNav() {
           </>
         )}
       </AnimatePresence>
-
-    </header>
+    </>
   );
 }

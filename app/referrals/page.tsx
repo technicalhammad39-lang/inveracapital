@@ -29,6 +29,7 @@ import {
   Line,
   CartesianGrid
 } from 'recharts';
+import QRCode from 'react-qr-code';
 
 // Analytics commission and growth data
 const commissionHistory = [
@@ -272,23 +273,16 @@ export default function ReferralsPage() {
               </div>
 
               {/* Right Column: QR Code Display directly */}
-              <div className="flex flex-col items-center gap-2 p-3 bg-bg-base/40 border border-border/85 rounded-2xl">
-                <svg className="w-24 h-24 bg-white p-2 rounded-xl" viewBox="0 0 100 100">
-                  <rect width="100" height="100" fill="#fff" />
-                  <rect x="5" y="5" width="20" height="20" fill="#000" />
-                  <rect x="9" y="9" width="12" height="12" fill="#fff" />
-                  <rect x="75" y="5" width="20" height="20" fill="#000" />
-                  <rect x="79" y="9" width="12" height="12" fill="#fff" />
-                  <rect x="5" y="75" width="20" height="20" fill="#000" />
-                  <rect x="9" y="79" width="12" height="12" fill="#fff" />
-                  <rect x="35" y="5" width="10" height="30" fill="#000" />
-                  <rect x="55" y="15" width="15" height="10" fill="#000" />
-                  <rect x="30" y="45" width="40" height="15" fill="#000" />
-                  <rect x="15" y="35" width="10" height="25" fill="#000" />
-                  <rect x="75" y="40" width="20" height="30" fill="#000" />
-                  <rect x="40" y="70" width="25" height="20" fill="#000" />
-                </svg>
-                <span className="text-[9px] text-text-secondary text-center font-bold">L1 Sign Up QR Link</span>
+              <div className="flex flex-col items-center justify-center gap-3 p-4 bg-bg-base/40 border border-border/85 rounded-2xl h-full">
+                <div className="w-28 h-28 md:w-36 md:h-36 bg-white p-2 rounded-xl flex items-center justify-center shadow-inner">
+                  <QRCode 
+                    value={copiedLink} 
+                    size={144} 
+                    style={{ height: "100%", width: "100%" }}
+                    viewBox={`0 0 144 144`}
+                  />
+                </div>
+                <span className="text-[10px] text-text-secondary text-center font-extrabold uppercase tracking-widest">L1 Sign Up QR Link</span>
               </div>
 
             </div>

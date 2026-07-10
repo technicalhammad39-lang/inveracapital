@@ -170,15 +170,8 @@ export default function Dashboard() {
                         formatter={(val) => formatCurrency(val)} 
                       />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className={clsx(
-                        "text-xs font-bold flex items-center",
-                        stat.isPositive ? "text-brand" : "text-rose-400"
-                      )}>
-                        {stat.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                        {stat.change}
-                      </span>
-                      <span className="text-[10px] text-text-secondary/80">vs prev cycle</span>
+                    <div className="flex items-center gap-1.5 h-[18px]">
+                      {/* vs prev cycle text removed as requested */}
                     </div>
                   </div>
 

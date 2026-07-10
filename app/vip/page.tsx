@@ -172,13 +172,13 @@ export default function VipPage() {
               onClick={() => setSelectedTier(t.id)}
               className={`p-5 rounded-2xl border cursor-pointer flex flex-col justify-between min-h-[170px] transition-all relative ${
                 selectedTier === t.id 
-                  ? `${t.selectedBorder} ${t.selectedBg} ${t.shadow}` 
+                  ? 'border-brand/80 bg-brand/10 shadow-[0_0_20px_rgba(0,255,136,0.25)]' 
                   : 'border-border/80 bg-bg-base/30 hover:border-brand/40'
               }`}
             >
               {t.active && (
                 <span className={`absolute top-2.5 right-2.5 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider border ${
-                  selectedTier === t.id ? t.badgeColor : 'bg-brand/10 text-brand border-brand/20'
+                  selectedTier === t.id ? 'bg-brand text-black border-brand' : 'bg-brand/10 text-brand border-brand/20'
                 }`}>
                   Active
                 </span>
@@ -193,7 +193,7 @@ export default function VipPage() {
               <div className="border-t border-border/40 pt-3 mt-4 flex justify-between items-end">
                 <div>
                   <span className="text-[9px] text-text-secondary block">ROI Booster</span>
-                  <span className={`text-xs font-bold transition-colors ${selectedTier === t.id ? t.color : 'text-brand'}`}>{t.roiBoost}</span>
+                  <span className={`text-xs font-bold transition-colors ${selectedTier === t.id ? 'text-brand drop-shadow-[0_0_5px_rgba(0,255,136,0.5)]' : 'text-text-secondary'}`}>{t.roiBoost}</span>
                 </div>
                 <ChevronRight size={14} className="text-text-secondary" />
               </div>

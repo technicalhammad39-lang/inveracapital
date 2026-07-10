@@ -102,7 +102,7 @@ export default function RewardsPage() {
                   isClaimed 
                     ? 'bg-brand/5 border-brand/20 text-brand/60' 
                     : isCurrent 
-                    ? 'bg-bg-base border-brand cursor-pointer shadow-[0_0_15px_rgba(0,255,136,0.15)] hover:scale-102 hover:border-brand-hover text-brand' 
+                    ? 'bg-brand border-brand cursor-pointer shadow-[0_0_15px_rgba(0,255,136,0.35)] hover:bg-brand-hover text-black' 
                     : 'bg-bg-base border-border/80 text-text-secondary'
                 }`}
               >
@@ -113,16 +113,16 @@ export default function RewardsPage() {
                   ) : isLocked ? (
                     <Lock size={12} className="text-text-secondary/50" />
                   ) : (
-                    <Sparkles size={12} className="text-brand animate-pulse" />
+                    <Sparkles size={12} className="text-black animate-pulse" />
                   )}
                 </div>
 
                 <span className="text-[10px] font-bold uppercase tracking-wider block mb-3">Day {dayNum}</span>
-                <span className={`text-lg font-black block ${isClaimed ? 'text-text-secondary/60' : 'text-white'}`}>
+                <span className={`text-lg font-black block ${isClaimed ? 'text-text-secondary/60' : isCurrent ? 'text-black' : 'text-white'}`}>
                   +{formatCurrency(amt)}
                 </span>
                 
-                <span className="text-[9px] font-semibold mt-4 block">
+                <span className="text-[9px] font-extrabold mt-4 block">
                   {isClaimed ? 'Claimed' : isCurrent ? 'CLAIM NOW' : 'Locked'}
                 </span>
               </div>
