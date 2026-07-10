@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import clsx from 'clsx';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCurrency } from '@/components/CurrencyProvider';
 import { 
