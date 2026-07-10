@@ -32,6 +32,7 @@ export function AnimatedCounter({ value, duration = 1000, formatter }: AnimatedC
     };
 
     window.requestAnimationFrame(step);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, duration]);
 
   return <span>{formatter ? formatter(displayValue) : Math.round(displayValue).toLocaleString()}</span>;
