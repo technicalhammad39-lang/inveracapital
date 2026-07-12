@@ -1,0 +1,464 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// USER & IDENTITY
+// -----------------------------------------------------------------------------
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  passwordHash      String
+  is2FAEnabled      Boolean   @default(false)
+  twoFactorSecret   String?
+  roleId            String?
+  status            UserStatus @default(ACTIVE)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  role                Role?                 @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  profile             Profile?
+  wallet              Wallet?
+  kyc                 KYC?
+  investments         UserInvestment[]
+  deposits            Deposit[]
+  withdrawals         Withdrawal[]
+  referralLink        ReferralLink?
+  referredByLink      ReferralLink?         @relation("ReferredUsers", fields: [referredByLinkId], references: [id])
+  referredByLinkId    String?
+  commissionsEarned   ReferralCommission[]  @relation("CommissionTo")
+  commissionsGiven    ReferralCommission[]  @relation("CommissionFrom")
+  lotteryEntries      LotteryEntry[]
+  lotteryWins         LotteryWinner[]
+  notifications       Notification[]
+  supportTickets      SupportTicket[]       @relation("TicketOwner")
+  assignedTickets     SupportTicket[]       @relation("TicketAssignee")
+  ticketMessages      TicketMessage[]
+  activityLogs        ActivityLog[]
+  auditLogs           AuditLog[]
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  firstName   String
+  lastName    String
+  phone       String?
+  country     String?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// WALLET & FINANCE
+// -----------------------------------------------------------------------------
+
+model Wallet {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  balance         Decimal  @default(0.00) @db.Decimal(18, 8)
+  totalDeposited  Decimal  @default(0.00) @db.Decimal(18, 8)
+  totalWithdrawn  Decimal  @default(0.00) @db.Decimal(18, 8)
+  totalProfit     Decimal  @default(0.00) @db.Decimal(18, 8)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String            @id @default(uuid())
+  walletId    String
+  amount      Decimal           @db.Decimal(18, 8)
+  type        TransactionType
+  status      TransactionStatus @default(COMPLETED)
+  reference   String?           // Deposit ID, Withdrawal ID, ROI ID, etc.
+  description String?
+  createdAt   DateTime          @default(now())
+
+  wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Deposit {
+  id              String        @id @default(uuid())
+  userId          String
+  amount          Decimal       @db.Decimal(18, 8)
+  method          String        // e.g., USDT-TRC20, Bank Transfer
+  txHash          String?
+  proofPath       String?       // Local file path
+  status          DepositStatus @default(PENDING)
+  adminNote       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum DepositStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Withdrawal {
+  id              String            @id @default(uuid())
+  userId          String
+  amount          Decimal           @db.Decimal(18, 8)
+  method          String            // e.g., USDT-TRC20
+  walletAddress   String?           // Destination address
+  status          WithdrawalStatus  @default(PENDING)
+  txHash          String?           // Payout hash
+  adminNote       String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  REJECTED
+}
+
+// -----------------------------------------------------------------------------
+// INVESTMENTS
+// -----------------------------------------------------------------------------
+
+model InvestmentPlan {
+  id            String   @id @default(uuid())
+  name          String
+  dailyRoi      Decimal  @db.Decimal(5, 4) // e.g., 0.0125 for 1.25%
+  durationDays  Int
+  minAmount     Decimal  @db.Decimal(18, 8)
+  maxAmount     Decimal  @db.Decimal(18, 8)
+  status        PlanStatus @default(ACTIVE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  investments   UserInvestment[]
+}
+
+enum PlanStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+model UserInvestment {
+  id              String   @id @default(uuid())
+  userId          String
+  planId          String
+  amount          Decimal  @db.Decimal(18, 8)
+  status          InvestmentStatus @default(ACTIVE)
+  startDate       DateTime @default(now())
+  endDate         DateTime
+  lastRoiClaim    DateTime?
+  totalEarned     Decimal  @default(0.00) @db.Decimal(18, 8)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            InvestmentPlan  @relation(fields: [planId], references: [id], onDelete: Restrict)
+  dailyRois       DailyROI[]
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model DailyROI {
+  id                String   @id @default(uuid())
+  userInvestmentId  String
+  amount            Decimal  @db.Decimal(18, 8)
+  date              DateTime @default(now())
+  status            RoiStatus @default(LOCKED)
+  createdAt         DateTime @default(now())
+
+  userInvestment    UserInvestment @relation(fields: [userInvestmentId], references: [id], onDelete: Cascade)
+}
+
+enum RoiStatus {
+  LOCKED
+  CLAIMED
+}
+
+// -----------------------------------------------------------------------------
+// REFERRALS
+// -----------------------------------------------------------------------------
+
+model ReferralLink {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  code        String   @unique
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referredUsers User[] @relation("ReferredUsers")
+}
+
+model ReferralCommission {
+  id          String   @id @default(uuid())
+  toUserId    String
+  fromUserId  String
+  amount      Decimal  @db.Decimal(18, 8)
+  level       Int      // 1, 2, 3 etc.
+  createdAt   DateTime @default(now())
+
+  toUser      User     @relation("CommissionTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  fromUser    User     @relation("CommissionFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// LOTTERY
+// -----------------------------------------------------------------------------
+
+model Lottery {
+  id              String   @id @default(uuid())
+  name            String
+  prizePool       Decimal  @db.Decimal(18, 8)
+  entryFee        Decimal  @db.Decimal(18, 8)
+  maxParticipants Int
+  status          LotteryStatus @default(OPEN)
+  drawDate        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  entries         LotteryEntry[]
+  winners         LotteryWinner[]
+}
+
+enum LotteryStatus {
+  OPEN
+  CLOSED
+  COMPLETED
+}
+
+model LotteryEntry {
+  id          String   @id @default(uuid())
+  lotteryId   String
+  userId      String
+  ticketNum   String
+  createdAt   DateTime @default(now())
+
+  lottery     Lottery  @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LotteryWinner {
+  id          String   @id @default(uuid())
+  lotteryId   String
+  userId      String
+  prizeAmount Decimal  @db.Decimal(18, 8)
+  place       Int      // 1st, 2nd, 3rd
+  createdAt   DateTime @default(now())
+
+  lottery     Lottery  @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// KYC & COMPLIANCE
+// -----------------------------------------------------------------------------
+
+model KYC {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  status          KycStatus @default(PENDING)
+  level           Int      @default(1)
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents       Document[]
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  kycId       String
+  type        DocumentType
+  path        String   // Local path
+  createdAt   DateTime @default(now())
+
+  kyc         KYC      @relation(fields: [kycId], references: [id], onDelete: Cascade)
+}
+
+enum DocumentType {
+  ID_CARD_FRONT
+  ID_CARD_BACK
+  PASSPORT
+  SELFIE
+  PROOF_OF_ADDRESS
+}
+
+// -----------------------------------------------------------------------------
+// SUPPORT & NOTIFICATIONS
+// -----------------------------------------------------------------------------
+
+model SupportTicket {
+  id          String   @id @default(uuid())
+  userId      String
+  assignedTo  String?  // Admin User ID
+  subject     String
+  status      TicketStatus @default(OPEN)
+  priority    TicketPriority @default(NORMAL)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation("TicketOwner", fields: [userId], references: [id], onDelete: Cascade)
+  admin       User?    @relation("TicketAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  messages    TicketMessage[]
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model TicketMessage {
+  id          String   @id @default(uuid())
+  ticketId    String
+  userId      String
+  message     String   @db.Text
+  attachment  String?
+  createdAt   DateTime @default(now())
+
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  message     String
+  isRead      Boolean  @default(false)
+  link        String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// SYSTEM & ADMIN
+// -----------------------------------------------------------------------------
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions Permission[] @relation("RolePermissions")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "MANAGE_USERS", "VIEW_FINANCE"
+  description String?
+
+  roles       Role[]   @relation("RolePermissions")
+}
+
+model Setting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Currency {
+  id          String   @id @default(uuid())
+  code        String   @unique // USD, PKR
+  name        String
+  symbol      String
+  isActive    Boolean  @default(true)
+  
+  rates       ExchangeRate[]
+}
+
+model ExchangeRate {
+  id          String   @id @default(uuid())
+  currencyId  String
+  rate        Decimal  @db.Decimal(18, 8) // Rate relative to base currency (e.g. USD)
+  updatedAt   DateTime @updatedAt
+
+  currency    Currency @relation(fields: [currencyId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String
+  action      String
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  adminId     String
+  action      String
+  targetType  String   // e.g. "User", "InvestmentPlan"
+  targetId    String
+  oldData     Json?
+  newData     Json?
+  createdAt   DateTime @default(now())
+
+  admin       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
