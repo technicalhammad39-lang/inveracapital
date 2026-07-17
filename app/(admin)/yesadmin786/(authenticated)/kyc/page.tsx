@@ -16,10 +16,10 @@ export default async function AdminKycPage() {
   const mappedKyc = kycData.map(k => ({
     id: k.id,
     user: k.user,
-    documentType: k.documentType,
-    documentUrl: k.documentUrl,
+    level: k.level,
+    rejectionReason: k.rejectionReason,
     status: k.status,
-    verifiedAt: k.verifiedAt ? k.verifiedAt.toISOString() : null,
+    updatedAt: k.updatedAt ? k.updatedAt.toISOString() : null,
     createdAt: k.createdAt.toISOString()
   }));
 

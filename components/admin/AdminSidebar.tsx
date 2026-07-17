@@ -40,7 +40,8 @@ const groups = [
       { name: 'Users', href: '/yesadmin786/users', icon: Users },
       { name: 'Investments', href: '/yesadmin786/investments', icon: TrendingUp },
       { name: 'Lottery', href: '/yesadmin786/lottery', icon: Gift },
-      { name: 'Referrals', href: '/yesadmin786/referrals', icon: Network },
+      { name: 'Referrals & Rewards', href: '/yesadmin786/referrals', icon: Network },
+      { name: 'Role Mgmt', href: '/yesadmin786/roles', icon: ShieldCheck },
     ]
   },
   {
@@ -50,12 +51,15 @@ const groups = [
       { name: 'Withdrawals', href: '/yesadmin786/withdrawals', icon: ArrowUpFromLine },
       { name: 'KYC & Verification', href: '/yesadmin786/kyc', icon: ShieldCheck },
       { name: 'Financial Control', href: '/yesadmin786/finance', icon: DollarSign },
+      { name: 'Audit Logs', href: '/yesadmin786/audit', icon: FileText },
     ]
   },
   {
     title: 'System & Support',
     items: [
       { name: 'Support Tickets', href: '/yesadmin786/support', icon: LifeBuoy },
+      { name: 'Email Center', href: '/yesadmin786/email', icon: FileText },
+      { name: 'Newsletter', href: '/yesadmin786/newsletter', icon: FileText },
       { name: 'Content Mgmt', href: '/yesadmin786/content', icon: FileText },
       { name: 'Security Logs', href: '/yesadmin786/security', icon: Lock },
       { name: 'System Settings', href: '/yesadmin786/settings', icon: Settings },
@@ -146,22 +150,13 @@ export function AdminSidebar() {
                 return (
                   <Link key={item.name} href={item.href} className="relative block group">
                     {/* Active Background Slide */}
-                    <AnimatePresence initial={false}>
-                      {isActive && (
-                        <motion.div
-                          layoutId="admin-active-nav-pill"
-                          className="absolute inset-0 bg-brand/10 rounded-xl border border-brand/20"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                        />
-                      )}
-                    </AnimatePresence>
+                    {isActive && (
+                      <div className="absolute inset-0 bg-brand/10 rounded-xl border border-brand/20 transition-all duration-300" />
+                    )}
 
                     {/* Left Active Line Accent */}
                     {isActive && (
-                      <motion.div 
-                        layoutId="admin-active-line-accent" 
-                        className="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-md shadow-[0_0_8px_rgba(0,255,136,0.8)]"
-                      />
+                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-md shadow-[0_0_8px_rgba(0,255,136,0.8)] transition-all duration-300" />
                     )}
 
                     <div className={clsx(

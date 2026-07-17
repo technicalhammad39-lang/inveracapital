@@ -18,7 +18,7 @@ export default async function AdminWithdrawalsPage() {
     user: w.user,
     amount: Number(w.amount),
     method: w.method,
-    destinationAddress: w.destinationAddress,
+    walletAddress: w.walletAddress,
     status: w.status,
     createdAt: w.createdAt.toISOString()
   }));

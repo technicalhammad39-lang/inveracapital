@@ -1,7 +1,7 @@
 import React from 'react';
 import prisma from '@/lib/prisma';
 import SupportClient from './SupportClient';
-import { verifyAuth } from '@/lib/auth';
+import { verifySessionToken } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
@@ -13,7 +13,7 @@ export default async function AdminSupportPage() {
   const token = cookieStore.get('admin_token')?.value;
   if (!token) return redirect('/yesadmin786');
   
-  const payload = await verifyAuth(token);
+  const payload = await verifySessionToken(token);
   if (!payload || !payload.userId) return redirect('/yesadmin786');
 
   const currentAdminId = payload.userId as string;

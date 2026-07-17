@@ -88,7 +88,7 @@ export default async function AdminDashboardOverview() {
     activeInvestments,
     lotteryRevenue: Number(lotteries._sum.prizePool) || 0,
     referralPayouts: Number(referralPayouts._sum.amount) || 0,
-    totalProfit: Number(totalProfit._sum.amount) || 0,
+    totalProfit: Number((totalProfit._sum as any).totalProfit) || 0,
     pendingSupport
   };
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { signToken, setAuthCookie } from '@/lib/auth';
+import { initializeUserSession } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
@@ -25,19 +25,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: `Account is ${user.status.toLowerCase()}` }, { status: 403 });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash || "");
 
     if (!isPasswordValid) {
       return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const token = await signToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role?.name || 'USER'
-    });
-
-    await setAuthCookie(token);
+    await initializeUserSession(
+      user.id,
+      user.email,
+      user.role?.name || 'USER',
+      request.headers.get('x-forwarded-for') || '127.0.0.1',
+      request.headers.get('user-agent') || 'Unknown'
+    );
 
     // Log the login activity
     await prisma.activityLog.create({

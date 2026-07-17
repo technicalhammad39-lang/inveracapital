@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Currency = 'USD' | 'PKR';
+type Currency = 'USD' | 'PKR' | 'GBP' | 'AED' | 'SAR';
 
 interface CurrencyContextType {
   currency: Currency;
@@ -12,13 +12,20 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
+const EXCHANGE_RATES: Record<Currency, number> = {
+  USD: 1,
+  PKR: 278.50,
+  GBP: 0.79,
+  AED: 3.67,
+  SAR: 3.75
+};
+
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrencyState] = useState<Currency>('USD');
-  const [exchangeRate, setExchangeRate] = useState<number>(278.50); // Simulated PKR rate
 
   useEffect(() => {
     const saved = localStorage.getItem('invera_currency') as Currency;
-    if (saved && (saved === 'USD' || saved === 'PKR')) {
+    if (saved && EXCHANGE_RATES[saved]) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrencyState(saved);
     }
@@ -30,17 +37,14 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   };
 
   const formatCurrency = (amount: number) => {
-    if (currency === 'PKR') {
-      return new Intl.NumberFormat('en-PK', {
-        style: 'currency',
-        currency: 'PKR',
-        minimumFractionDigits: 0,
-      }).format(amount * exchangeRate);
-    }
-    return new Intl.NumberFormat('en-US', {
+    const rate = EXCHANGE_RATES[currency] || 1;
+    const converted = amount * rate;
+    
+    return new Intl.NumberFormat(currency === 'PKR' ? 'en-PK' : 'en-US', {
       style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+      currency: currency,
+      minimumFractionDigits: currency === 'PKR' ? 0 : 2,
+    }).format(converted);
   };
 
   return (

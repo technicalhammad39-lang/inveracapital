@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { logoutUser, fetchCurrentUser } from '@/app/actions/authActions';
+import { UserAvatar } from '@/components/UserAvatar';
 import { 
   Bell, 
   ChevronDown, 
@@ -30,14 +32,16 @@ import {
   Lock
 } from 'lucide-react';
 import { useCurrency } from './CurrencyProvider';
+import { useLanguage } from './LanguageProvider';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
-export function TopNav() {
+export function TopNav({ initialUser }: { initialUser?: any }) {
   const pathname = usePathname();
   const { currency, setCurrency } = useCurrency();
+  const { language, setLanguage } = useLanguage();
   
   // Dropdown States
   const [currencyOpen, setCurrencyOpen] = useState(false);
@@ -45,9 +49,17 @@ export function TopNav() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(initialUser || null);
+
+  useEffect(() => {
+    if (!initialUser) {
+      fetchCurrentUser().then(data => {
+        if (data) setUserData(data);
+      });
+    }
+  }, [initialUser]);
 
   // Preference States
-  const [activeLang, setActiveLang] = useState('EN');
   const [activeTheme, setActiveTheme] = useState('Emerald Dark');
 
   // Simulated Notifications
@@ -161,21 +173,23 @@ export function TopNav() {
                 className="absolute top-full right-0 mt-2 w-36 bg-bg-base border border-border rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-1"
               >
                 {[
-                  { code: 'EN', name: 'English' },
-                  { code: 'UR', name: 'Urdu (اردو)' },
-                  { code: 'ES', name: 'Spanish' },
-                  { code: 'ZH', name: 'Chinese' }
+                  { code: 'en', name: 'English' },
+                  { code: 'ur', name: 'Urdu (اردو)' },
+                  { code: 'es', name: 'Spanish' },
+                  { code: 'ar', name: 'Arabic (العربية)' },
+                  { code: 'fr', name: 'French' },
+                  { code: 'de', name: 'German' }
                 ].map((l) => (
                   <button
                     key={l.code}
-                    onClick={() => { setActiveLang(l.code); setLangOpen(false); }}
+                    onClick={() => { setLanguage(l.code as any); setLangOpen(false); }}
                     className={clsx(
                       "w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between",
-                      activeLang === l.code ? "bg-brand/10 text-brand font-semibold" : "text-text-secondary hover:bg-white/5 hover:text-white"
+                      language === l.code ? "bg-brand/10 text-brand font-semibold" : "text-text-secondary hover:bg-white/5 hover:text-white"
                     )}
                   >
                     <span>{l.name}</span>
-                    {activeLang === l.code && <Check size={14} />}
+                    {language === l.code && <Check size={14} />}
                   </button>
                 ))}
               </motion.div>
@@ -203,11 +217,14 @@ export function TopNav() {
               >
                 {[
                   { code: 'USD', name: 'USD ($)' },
-                  { code: 'PKR', name: 'PKR (₨)' }
+                  { code: 'PKR', name: 'PKR (₨)' },
+                  { code: 'GBP', name: 'GBP (£)' },
+                  { code: 'AED', name: 'AED (د.إ)' },
+                  { code: 'SAR', name: 'SAR (ر.س)' }
                 ].map((curr) => (
                   <button 
                     key={curr.code}
-                    onClick={() => { setCurrency(curr.code as 'USD' | 'PKR'); setCurrencyOpen(false); }}
+                    onClick={() => { setCurrency(curr.code as any); setCurrencyOpen(false); }}
                     className={clsx(
                       "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-between",
                       currency === curr.code ? "bg-brand/10 text-brand font-semibold" : "text-text-secondary hover:bg-white/5 hover:text-white"
@@ -315,12 +332,18 @@ export function TopNav() {
             className="flex items-center gap-3 pl-4 border-l border-border hover:opacity-90 transition-opacity"
           >
             <div className="text-right hidden sm:block">
-              <div className="text-xs font-semibold text-text-primary">Admin User</div>
-              <div className="text-[9px] text-brand tracking-widest uppercase font-bold mt-0.5">VIP Gold</div>
+              <div className="text-xs font-semibold text-text-primary">
+                {userData ? `${userData.firstName} ${userData.lastName}` : 'Loading...'}
+              </div>
+              <div className="text-[9px] text-brand tracking-widest uppercase font-bold mt-0.5">Member</div>
             </div>
-            <div className="w-9 h-9 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center overflow-hidden shadow-[0_0_10px_rgba(0,255,136,0.1)]">
-              <User className="w-4.5 h-4.5 text-brand" />
-            </div>
+            {userData ? (
+              <UserAvatar userId={userData.id} name={userData.firstName} avatarUrl={userData.avatarUrl} size={36} />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center overflow-hidden shadow-[0_0_10px_rgba(0,255,136,0.1)]">
+                <User className="w-4.5 h-4.5 text-brand" />
+              </div>
+            )}
           </button>
 
           <AnimatePresence>
@@ -333,8 +356,8 @@ export function TopNav() {
               >
                 {/* Profile Header */}
                 <div className="p-3 border-b border-border/60 mb-1">
-                  <p className="text-xs font-bold text-text-primary">Admin User</p>
-                  <p className="text-[10px] text-text-secondary mt-0.5">admin@inveracapital.com</p>
+                  <p className="text-xs font-bold text-text-primary">{userData ? `${userData.firstName} ${userData.lastName}` : 'Loading...'}</p>
+                  <p className="text-[10px] text-text-secondary mt-0.5">{userData ? userData.email : ''}</p>
                 </div>
 
                 {/* Dropdown Items */}
@@ -387,7 +410,13 @@ export function TopNav() {
 
                 <div className="border-t border-border/60 my-1"></div>
 
-                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/5 rounded-lg transition-colors text-left">
+                <button 
+                  onClick={async () => {
+                    await logoutUser();
+                    window.location.href = '/login';
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/5 rounded-lg transition-colors text-left"
+                >
                   <LogOut size={14} />
                   <span>Sign Out Account</span>
                 </button>
@@ -459,7 +488,13 @@ export function TopNav() {
               </div>
 
               <div className="pt-4 border-t border-border mt-auto">
-                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/5 transition-colors text-left text-sm font-medium">
+                <button 
+                  onClick={async () => {
+                    await logoutUser();
+                    window.location.href = '/login';
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/5 transition-colors text-left text-sm font-medium"
+                >
                   <LogOut size={18} />
                   <span>Logout</span>
                 </button>

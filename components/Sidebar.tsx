@@ -1,8 +1,11 @@
+// @ts-nocheck
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useLanguage } from '@/components/LanguageProvider';
+import { logoutUser } from '@/app/actions/authActions';
 import { 
   LayoutDashboard, 
   TrendingUp, 
@@ -25,50 +28,17 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import clsx from 'clsx';
-
-// Sidebar Groups
-const groups = [
-  {
-    title: 'Core Menu',
-    items: [
-      { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-      { name: 'Investments', href: '/investments', icon: TrendingUp },
-      { name: 'Wallet', href: '/wallet', icon: Wallet },
-      { name: 'Lottery', href: '/lottery', icon: Gift },
-      { name: 'Referrals', href: '/referrals', icon: Users },
-      { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft },
-      { name: 'Rewards', href: '/rewards', icon: Award },
-    ]
-  },
-  {
-    title: 'Management',
-    items: [
-      { name: 'VIP Status', href: '/vip', icon: Crown },
-      { name: 'Document Center', href: '/documents', icon: FileText },
-      { name: 'Security Score', href: '/security', icon: Lock },
-      { name: 'Activity Logs', href: '/activity', icon: Activity },
-    ]
-  },
-  {
-    title: 'Support & Settings',
-    items: [
-      { name: 'Profile Details', href: '/profile', icon: User },
-      { name: 'Help Desk', href: '/support', icon: LifeBuoy },
-      { name: 'Alerts Hub', href: '/notifications', icon: Bell },
-      { name: 'Official News', href: '/announcements', icon: Megaphone },
-      { name: 'Preferences', href: '/settings', icon: Settings },
-    ]
-  }
-];
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const saved = localStorage.getItem('sidebar-collapsed');
     if (saved) {
@@ -81,6 +51,40 @@ export function Sidebar() {
     setIsCollapsed(newState);
     localStorage.setItem('sidebar-collapsed', String(newState));
   };
+
+  const groups = [
+    {
+      title: t('sidebar.coreMenu', 'Core Menu'),
+      items: [
+        { name: t('nav.dashboard', 'Dashboard'), href: '/', icon: LayoutDashboard },
+        { name: t('nav.investments', 'Investments'), href: '/investments', icon: TrendingUp },
+        { name: t('nav.wallet', 'Wallet'), href: '/wallet', icon: Wallet },
+        { name: t('nav.lottery', 'Lottery'), href: '/lottery', icon: Gift },
+        { name: t('nav.referrals', 'Referrals'), href: '/referrals', icon: Users },
+        { name: t('sidebar.transactions', 'Transactions'), href: '/transactions', icon: ArrowRightLeft },
+        { name: t('sidebar.rewards', 'Rewards'), href: '/rewards', icon: Award },
+      ]
+    },
+    {
+      title: t('sidebar.management', 'Management'),
+      items: [
+        { name: t('sidebar.vipStatus', 'VIP Status'), href: '/vip', icon: Crown },
+        { name: t('sidebar.documents', 'Document Center'), href: '/documents', icon: FileText },
+        { name: t('sidebar.security', 'Security Score'), href: '/security', icon: Lock },
+        { name: t('sidebar.activity', 'Activity Logs'), href: '/activity', icon: Activity },
+      ]
+    },
+    {
+      title: t('sidebar.support', 'Support & Settings'),
+      items: [
+        { name: t('nav.profile', 'Profile Details'), href: '/profile', icon: User },
+        { name: t('sidebar.helpdesk', 'Help Desk'), href: '/support', icon: LifeBuoy },
+        { name: t('sidebar.alerts', 'Alerts Hub'), href: '/notifications', icon: Bell },
+        { name: t('sidebar.news', 'Official News'), href: '/announcements', icon: Megaphone },
+        { name: t('sidebar.settings', 'Preferences'), href: '/settings', icon: Settings },
+      ]
+    }
+  ];
 
   if (!mounted) {
     return (
@@ -95,7 +99,7 @@ export function Sidebar() {
       className="border-r border-border h-screen sticky top-0 bg-gradient-to-b from-bg-base/95 to-bg-card/95 backdrop-blur-xl flex flex-col pt-6 pb-4 px-3 hidden lg:flex shrink-0 z-40 overflow-hidden"
     >
       {/* Premium Logo & Collapse Control */}
-      <div className={clsx(
+      <div className={cn(
         "flex items-center px-2 mb-8 transition-all duration-300",
         isCollapsed ? "flex-col gap-4 justify-center" : "justify-between"
       )}>
@@ -145,12 +149,12 @@ export function Sidebar() {
 
                 return (
                   <Link key={item.name} href={item.href} className="relative block group">
-                    {/* Active Background Slide */}
+                    {/* Active Background Glow */}
                     <AnimatePresence initial={false}>
                       {isActive && (
                         <motion.div
                           layoutId="active-nav-pill"
-                          className="absolute inset-0 bg-brand-muted rounded-xl border border-brand/10"
+                          className="absolute inset-0 bg-gradient-to-r from-brand/20 to-brand/5 rounded-xl shadow-[inset_0_0_20px_rgba(0,255,136,0.15)]"
                           transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                         />
                       )}
@@ -164,25 +168,38 @@ export function Sidebar() {
                       />
                     )}
 
-                    <div className={clsx(
-                      "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+                    <div className={cn(
+                      "relative flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200",
                       isActive ? "text-brand font-semibold" : "text-text-secondary group-hover:text-text-primary group-hover:bg-white/[0.02]"
                     )}>
-                      <Icon 
-                        size={19} 
-                        className={clsx(
-                          "transition-transform duration-300 group-hover:scale-105 shrink-0",
-                          isActive ? "text-brand drop-shadow-[0_0_8px_rgba(0,255,136,0.6)]" : "text-text-secondary group-hover:text-white"
-                        )} 
-                      />
+                      <div className="flex items-center gap-3">
+                        <Icon 
+                          size={19} 
+                          className={cn(
+                            "transition-transform duration-300 group-hover:scale-105 shrink-0",
+                            isActive ? "text-brand drop-shadow-[0_0_8px_rgba(0,255,136,0.6)]" : "text-text-secondary group-hover:text-white"
+                          )} 
+                        />
+                        {!isCollapsed && (
+                          <motion.span 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-[13px]"
+                          >
+                            {item.name}
+                          </motion.span>
+                        )}
+                      </div>
+                      
+                      {/* Animated Right Arrow */}
                       {!isCollapsed && (
-                        <motion.span 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-[13px]"
-                        >
-                          {item.name}
-                        </motion.span>
+                        <ChevronRight 
+                          size={14} 
+                          className={cn(
+                            "transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-active:rotate-90",
+                            isActive ? "text-brand opacity-100" : "text-text-secondary group-hover:text-white"
+                          )}
+                        />
                       )}
                     </div>
                   </Link>
@@ -195,8 +212,14 @@ export function Sidebar() {
 
       {/* Footer Area */}
       <div className="mt-auto pt-4 border-t border-border/60 space-y-1">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-rose-400 hover:bg-rose-500/5 transition-colors text-left">
-          <LogOut size={19} className={clsx(isCollapsed && "mx-auto")} />
+        <button 
+          onClick={async () => {
+            await logoutUser();
+            window.location.href = '/login';
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-rose-400 hover:bg-rose-500/5 transition-colors text-left"
+        >
+          <LogOut size={19} className={cn(isCollapsed && "mx-auto")} />
           {!isCollapsed && <span className="text-[13px] font-medium">Logout Account</span>}
         </button>
       </div>

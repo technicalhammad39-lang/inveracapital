@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { CurrencyProvider } from '@/components/CurrencyProvider';
+import { LanguageProvider } from '@/components/LanguageProvider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -18,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} font-sans`}>
       <body className="bg-bg-base text-text-primary min-h-screen flex antialiased" suppressHydrationWarning>
-        <CurrencyProvider>
-          {children}
-        </CurrencyProvider>
+        <LanguageProvider>
+          <CurrencyProvider>
+            {children}
+          </CurrencyProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

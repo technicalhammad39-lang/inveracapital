@@ -14,7 +14,7 @@ export async function broadcastAnnouncement(title: string, message: string, link
     if (users.length === 0) return { success: false, error: 'No active users found to broadcast to.' };
 
     // Create notifications in bulk
-    const notifications = users.map(u => ({
+    const notifications = users.map((u: { id: string }) => ({
       userId: u.id,
       title,
       message,

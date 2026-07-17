@@ -52,6 +52,33 @@ export default function UsersClient({ initialUsers, totalUsers }: { initialUsers
     }
   };
 
+  const handleAdjustBalance = async (userId: string, identifier: string) => {
+    const amountStr = prompt(`Adjust Balance for ${identifier}\nEnter amount to add (use negative for deduction):`);
+    if (!amountStr || isNaN(Number(amountStr))) return;
+    
+    const reason = prompt('Enter a reason for this audit log:');
+    if (!reason) {
+      alert('A reason is required for balance adjustments.');
+      return;
+    }
+    
+    setIsProcessing(userId);
+    try {
+      const m = await import('@/app/actions/adminActions');
+      const res = await m.manuallyAdjustWallet(userId, amountStr, reason);
+      if (res.success) {
+        setUsers(users.map(u => u.id === userId ? { ...u, balance: u.balance + Number(amountStr) } : u));
+        alert('Balance adjusted and logged successfully.');
+      } else {
+        alert(`Error: ${res.error}`);
+      }
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+    setIsProcessing(null);
+  };
+
+
   return (
     <div className="space-y-8 pb-10 max-w-7xl mx-auto">
       
@@ -154,7 +181,9 @@ export default function UsersClient({ initialUsers, totalUsers }: { initialUsers
                         <Eye size={16} />
                       </button>
                       <button 
-                        className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-lg transition-colors" 
+                        onClick={() => handleAdjustBalance(user.id, user.username || user.email)}
+                        disabled={isProcessing === user.id}
+                        className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50" 
                         title="Adjust Balance"
                       >
                         <DollarSign size={16} />
