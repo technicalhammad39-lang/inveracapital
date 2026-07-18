@@ -190,7 +190,11 @@ export function AdminSidebar() {
 
       {/* Footer Area */}
       <div className="mt-auto pt-4 border-t border-border/60 space-y-1">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-rose-400 hover:bg-rose-500/5 transition-colors text-left">
+        <button onClick={async () => {
+          const { adminLogout } = await import('@/app/actions/adminActions');
+          await adminLogout();
+          window.location.href = '/yesadmin786/login';
+        }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-rose-400 hover:bg-rose-500/5 transition-colors text-left">
           <LogOut size={19} className={clsx(isCollapsed && "mx-auto")} />
           {!isCollapsed && <span className="text-[13px] font-medium">Exit Admin Mode</span>}
         </button>

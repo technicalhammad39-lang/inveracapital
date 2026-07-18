@@ -3,9 +3,12 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { verifySuperAdmin } from '@/app/actions/adminActions';
 
 export async function updateKycStatus(kycId: string, newStatus: string) {
   try {
+    const admin = await verifySuperAdmin();
+    
     const kyc = await prisma.kYC.findUnique({ where: { id: kycId } });
     if (!kyc) return { success: false, error: 'KYC record not found' };
 
@@ -19,7 +22,6 @@ export async function updateKycStatus(kycId: string, newStatus: string) {
 
     // Also update the User's overall status if approved
     if (newStatus === 'APPROVED') {
-      // (Optional) you can add a 'kycVerified' boolean to the User profile, or rely on the KYC table
       await prisma.activityLog.create({
         data: {
           userId: kyc.userId,
@@ -38,6 +40,17 @@ export async function updateKycStatus(kycId: string, newStatus: string) {
         }
       });
     }
+    
+    // Log Audit for admin
+    await prisma.auditLog.create({
+      data: {
+        adminId: admin.id,
+        action: 'UPDATE_KYC_STATUS',
+        targetType: 'KYC',
+        targetId: kycId,
+        newData: { status: newStatus }
+      }
+    });
 
     revalidatePath('/yesadmin786/kyc');
     return { success: true };

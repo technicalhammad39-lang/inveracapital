@@ -8,5 +8,5 @@ export const revalidate = 0;
 export default async function AdminFinancePage() {
   const settingsData = await prisma.setting.findMany();
 
-  return <FinanceClient settings={settingsData} />;
+  return <FinanceClient settings={settingsData ? JSON.parse(JSON.stringify(settingsData)) : []} />;
 }

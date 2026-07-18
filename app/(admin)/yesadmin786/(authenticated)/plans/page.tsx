@@ -13,7 +13,7 @@ export default async function PlansAdminPage() {
         <p className="text-text-secondary mt-1">Manage platform investment plans, ROI, and display settings.</p>
       </div>
 
-      <PlansAdminClient initialPlans={plans} />
+      <PlansAdminClient initialPlans={plans ? JSON.parse(JSON.stringify(plans)) : []} />
     </div>
   );
 }

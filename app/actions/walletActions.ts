@@ -80,14 +80,26 @@ export async function requestDeposit(amount: string, methodId: string) {
     const parsed = depositSchema.parse({ amount, methodId });
     const numAmount = Number(parsed.amount);
 
-    await prisma.deposit.create({
-      data: {
-        userId: user.id,
-        amount: numAmount,
-        paymentMethodId: parsed.methodId,
-        status: 'PENDING'
-      }
-    });
+    await prisma.$transaction([
+      prisma.deposit.create({
+        data: {
+          userId: user.id,
+          amount: numAmount,
+          paymentMethodId: parsed.methodId,
+          status: 'PENDING'
+        }
+      }),
+      prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          action: 'DEPOSIT_PENDING',
+          type: 'USER',
+          amount: numAmount,
+          status: 'PENDING',
+          ipAddress: '127.0.0.1'
+        }
+      })
+    ]);
 
     return { success: true };
   } catch (error: any) {
@@ -195,6 +207,16 @@ export async function requestWithdrawal(amount: string, method: string, address:
           walletAddress: address,
           status: 'PENDING'
         }
+      }),
+      prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          action: 'WITHDRAWAL_PENDING',
+          type: 'USER',
+          amount: numAmount,
+          status: 'PENDING',
+          ipAddress: '127.0.0.1'
+        }
       })
     ]);
 
@@ -203,3 +225,83 @@ export async function requestWithdrawal(amount: string, method: string, address:
     return { success: false, error: error.message };
   }
 }
+
+export async function requestInternalTransfer(amount: string, fromWallet: string, toWallet: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      throw new Error('Invalid transfer amount');
+    }
+
+    const wallet = await prisma.wallet.findUnique({ where: { userId: user.id } });
+    if (!wallet) throw new Error('Wallet not found');
+
+    if (fromWallet === 'main' && toWallet === 'investment') {
+      // Invera architecture: Cannot transfer to Investment Wallet. Users must purchase plans.
+      throw new Error('To invest, please navigate to the Investments page and purchase a plan directly from your Main Wallet.');
+    }
+
+    if (fromWallet === 'referral' && toWallet === 'main') {
+      // Logic for transferring from Referral to Main Wallet
+      // First, get total referral earnings
+      const referrals = await prisma.referralCommission.findMany({
+        where: { toUserId: user.id }
+      });
+      const totalReferral = referrals.reduce((sum, comm) => sum + Number(comm.amount), 0);
+      
+      // Get total already transferred from referral to main
+      const pastTransfers = await prisma.walletTransaction.aggregate({
+        where: {
+          walletId: wallet.id,
+          type: 'CREDIT',
+          reference: 'REFERRAL_TRANSFER'
+        },
+        _sum: { amount: true }
+      });
+      const transferredOut = pastTransfers._sum.amount ? Number(pastTransfers._sum.amount) : 0;
+      const availableReferral = totalReferral - transferredOut;
+
+      if (numAmount > availableReferral) {
+        throw new Error(`Insufficient referral balance. Available: $${availableReferral.toFixed(2)}`);
+      }
+
+      await prisma.$transaction([
+        prisma.wallet.update({
+          where: { id: wallet.id },
+          data: { balance: { increment: numAmount } }
+        }),
+        prisma.walletTransaction.create({
+          data: {
+            walletId: wallet.id,
+            amount: numAmount,
+            type: 'CREDIT',
+            status: 'COMPLETED',
+            description: 'Internal Transfer from Referral to Main',
+            reference: 'REFERRAL_TRANSFER'
+          }
+        }),
+        prisma.activityLog.create({
+          data: {
+            userId: user.id,
+            action: 'INTERNAL_TRANSFER',
+            type: 'USER',
+            amount: numAmount,
+            status: 'COMPLETED',
+            ipAddress: '127.0.0.1'
+          }
+        })
+      ]);
+
+      return { success: true };
+    }
+
+    // Default catch-all for unsupported transfers
+    throw new Error('This transfer path is currently unsupported by the system architecture.');
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+

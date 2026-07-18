@@ -206,3 +206,30 @@ export async function getAllInvestmentPlans() {
     return [];
   }
 }
+
+export async function getPlatformActivityFeed() {
+  try {
+    const activities = await prisma.activityLog.findMany({
+      include: {
+        user: { include: { profile: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    return activities.map(act => ({
+      id: act.id,
+      user: act.user.profile?.firstName ? `${act.user.profile.firstName} ${act.user.profile.lastName}` : act.user.username || act.user.email.split('@')[0],
+      avatar: act.user.profile?.avatarUrl || (act.user.username || act.user.email).substring(0, 2).toUpperCase(),
+      action: act.action, // e.g., 'DEPOSIT_APPROVED', 'LOTTERY_PURCHASE', 'INVESTMENT_STARTED'
+      type: act.type || 'SYSTEM',
+      amount: act.amount ? Number(act.amount) : null,
+      status: act.status || 'COMPLETED',
+      time: act.createdAt.toISOString()
+    }));
+  } catch (error) {
+    console.error('getPlatformActivityFeed Error:', error);
+    return [];
+  }
+}
+

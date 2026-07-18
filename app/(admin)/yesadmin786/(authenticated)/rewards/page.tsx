@@ -10,5 +10,5 @@ export default async function AdminRewardsPage() {
     orderBy: { createdAt: 'desc' }
   });
 
-  return <RewardsClient rewards={rewards} />;
+  return <RewardsClient rewards={rewards ? JSON.parse(JSON.stringify(rewards)) : []} />;
 }

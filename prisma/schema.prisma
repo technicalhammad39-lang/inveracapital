@@ -54,6 +54,8 @@ model User {
   bankAccounts        BankAccount[]
   cryptoWallets       CryptoWallet[]
   rewards             UserReward[]
+
+  @@index([referredByLinkId])
 }
 
 enum UserStatus {
@@ -321,6 +323,9 @@ model ReferralCommission {
 
   toUser      User     @relation("CommissionTo", fields: [toUserId], references: [id], onDelete: Cascade)
   fromUser    User     @relation("CommissionFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+
+  @@index([toUserId])
+  @@index([fromUserId])
 }
 
 // -----------------------------------------------------------------------------
@@ -368,8 +373,19 @@ model Lottery {
   prizePool       Decimal  @db.Decimal(18, 8)
   entryFee        Decimal  @db.Decimal(18, 8)
   maxParticipants Int
-  status          LotteryStatus @default(OPEN)
+  status          LotteryStatus @default(DRAFT)
   drawDate        DateTime?
+  
+  // Custom Fields
+  bannerImage     String?
+  promoBanner     String?
+  description     String?  @db.Text
+  rules           String?  @db.Text
+  winnerDistribution String?
+  startDate       DateTime?
+  endDate         DateTime?
+  featured        Boolean  @default(false)
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -378,7 +394,10 @@ model Lottery {
 }
 
 enum LotteryStatus {
+  DRAFT
+  UPCOMING
   OPEN
+  LIVE
   CLOSED
   COMPLETED
 }
@@ -387,7 +406,9 @@ model LotteryEntry {
   id          String   @id @default(uuid())
   lotteryId   String
   userId      String
-  ticketNum   String
+  ticketNum   String   @unique
+  status      String   @default("ACTIVE")
+  drawStatus  String   @default("PENDING")
   createdAt   DateTime @default(now())
 
   lottery     Lottery  @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
@@ -558,6 +579,9 @@ model ActivityLog {
   id          String   @id @default(uuid())
   userId      String
   action      String
+  amount      Decimal? @db.Decimal(18, 8)
+  type        String?  // e.g. DEPOSIT, LOTTERY, REWARD
+  status      String?  // e.g. SUCCESS, PENDING
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime @default(now())

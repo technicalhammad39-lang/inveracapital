@@ -390,7 +390,11 @@ export function AdminTopNav() {
 
                 <div className="border-t border-border/60 my-1"></div>
 
-                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/5 rounded-lg transition-colors text-left">
+                <button onClick={async () => {
+                  const { adminLogout } = await import('@/app/actions/adminActions');
+                  await adminLogout();
+                  window.location.href = '/yesadmin786/login';
+                }} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/5 rounded-lg transition-colors text-left">
                   <LogOut size={14} />
                   <span>Sign Out Account</span>
                 </button>

@@ -39,19 +39,37 @@ export async function middleware(request: NextRequest) {
   // Role-based Middleware
   const pathname = request.nextUrl.pathname;
   
-  if (pathname.startsWith('/yesadmin786/')) {
+  const isAdminRoute = pathname.startsWith('/yesadmin786');
+  const isAdminAuthRoute = pathname.startsWith('/yesadmin786/login');
+
+  if (isAdminRoute && !isAdminAuthRoute) {
     const adminToken = request.cookies.get('admin_token')?.value;
     if (!adminToken) {
-      return NextResponse.redirect(new URL('/yesadmin786', request.url));
+      return NextResponse.redirect(new URL('/yesadmin786/login', request.url));
     }
     try {
       const { payload } = await jwtVerify(adminToken, key);
-      // Validate Admin role
       if (payload.role !== 'SUPER_ADMIN' && payload.role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/yesadmin786', request.url));
+        const resp = NextResponse.redirect(new URL('/yesadmin786/login', request.url));
+        resp.cookies.delete('admin_token');
+        return resp;
       }
     } catch (err) {
-      return NextResponse.redirect(new URL('/yesadmin786', request.url));
+      const resp = NextResponse.redirect(new URL('/yesadmin786/login', request.url));
+      resp.cookies.delete('admin_token');
+      return resp;
+    }
+  }
+
+  if (isAdminAuthRoute) {
+    const adminToken = request.cookies.get('admin_token')?.value;
+    if (adminToken) {
+      try {
+        await jwtVerify(adminToken, key);
+        return NextResponse.redirect(new URL('/yesadmin786', request.url));
+      } catch (err) {
+        // invalid token, let them login
+      }
     }
   }
 

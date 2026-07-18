@@ -92,6 +92,8 @@ export default function WalletClient({
   const [trAmount, setTrAmount] = useState<string>('100');
   const [trSuccess, setTrSuccess] = useState<boolean>(false);
 
+  const [trError, setTrError] = useState<string>('');
+
   // Wallets Balances
   const wallets = [
     { key: 'main', label: 'Main Wallet', value: walletData?.main || 0, color: '#00ff88', glow: 'rgba(0,255,136,0.15)', badge: 'Active', icon: Wallet },
@@ -159,13 +161,29 @@ export default function WalletClient({
     }
   };
 
-  const handleTransferSubmit = () => {
+  const handleTransferSubmit = async () => {
     if (!trAmount || Number(trAmount) <= 0) return;
-    setTrSuccess(true);
-    setTimeout(() => {
-      setTrSuccess(false);
-      setTrAmount('');
-    }, 4000);
+    setTrError('');
+    const m = await import('@/app/actions/walletActions');
+    const res = await m.requestInternalTransfer(trAmount, trFrom, trTo);
+
+    if (res.success) {
+      setTrSuccess(true);
+      // Refresh wallet locally depending on from/to
+      if (trFrom === 'referral' && trTo === 'main') {
+        setWalletData((prev: any) => ({ 
+          ...prev, 
+          main: prev.main + Number(trAmount),
+          referral: prev.referral - Number(trAmount)
+        }));
+      }
+      setTimeout(() => {
+        setTrSuccess(false);
+        setTrAmount('');
+      }, 4000);
+    } else {
+      setTrError(res.error || 'Transfer failed.');
+    }
   };
 
   return (
@@ -567,6 +585,13 @@ export default function WalletClient({
                       </div>
 
                     </div>
+
+                    {trError && (
+                      <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-lg text-xs flex items-center gap-2">
+                        <AlertTriangle size={14} />
+                        <span>{trError}</span>
+                      </div>
+                    )}
 
                     <button 
                       onClick={handleTransferSubmit}

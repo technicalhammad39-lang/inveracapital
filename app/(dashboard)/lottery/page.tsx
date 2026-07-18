@@ -13,5 +13,9 @@ export default async function LotteryPage() {
   const entries = resEntries.success && resEntries.entries ? resEntries.entries : null;
   const winners = resWinners.success && resWinners.winners ? resWinners.winners : null;
 
-  return <LotteryClient dbLotteries={lotteries} dbEntries={entries} dbWinners={winners} />;
+  return <LotteryClient 
+    dbLotteries={lotteries ? JSON.parse(JSON.stringify(lotteries)) : null} 
+    dbEntries={entries ? JSON.parse(JSON.stringify(entries)) : null} 
+    dbWinners={winners ? JSON.parse(JSON.stringify(winners)) : null} 
+  />;
 }

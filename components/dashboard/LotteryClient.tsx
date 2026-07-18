@@ -51,7 +51,7 @@ const pools = [
   }
 ];
 
-import { buyLotteryTicket } from '@/app/actions/lotteryActions';
+import { purchaseTicket } from '@/app/actions/lotteryActions';
 
 export default function LotteryClient({ dbLotteries, dbEntries, dbWinners }: { dbLotteries?: any, dbEntries?: any, dbWinners?: any }) {
   const { formatCurrency } = useCurrency();
@@ -86,7 +86,7 @@ export default function LotteryClient({ dbLotteries, dbEntries, dbWinners }: { d
     setPurchaseStep('rolling');
     
     try {
-      const res = await buyLotteryTicket(activePool.id);
+      const res = await purchaseTicket(activePool.id);
       if (res.success && res.ticket) {
         setGeneratedTicket(res.ticket.ticketNum);
         setPurchaseStep('success');
@@ -188,79 +188,83 @@ export default function LotteryClient({ dbLotteries, dbEntries, dbWinners }: { d
           </div>
         </div>
 
-        {/* Centerpiece Prize pool display */}
+        {/* Promotional Banner Display */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-gradient-to-br from-brand/15 via-bg-card to-bg-base p-6 rounded-3xl lg:col-span-2 relative overflow-hidden flex flex-col justify-between border border-brand/20 min-h-[380px]"
-          style={{ boxShadow: `0 10px 40px -10px ${activePool.glow}` }}
+          className="bg-bg-card rounded-3xl lg:col-span-2 relative overflow-hidden flex flex-col justify-between border border-border min-h-[380px] group"
+          style={{ boxShadow: `0 10px 40px -10px ${activePool.glow || 'rgba(0,0,0,0)'}` }}
         >
-          {/* Glowing background node */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
-          
-          {/* Floating gift icons background */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <Gift size={30} className="absolute top-[10%] left-[8%] text-brand/8 rotate-12" />
-            <Gift size={22} className="absolute top-[20%] right-[12%] text-brand/6 -rotate-12" />
-            <Gift size={40} className="absolute bottom-[15%] left-[15%] text-brand/5 rotate-45" />
-            <Gift size={18} className="absolute top-[60%] right-[8%] text-brand/7 -rotate-6" />
-            <Gift size={26} className="absolute bottom-[35%] right-[30%] text-brand/4 rotate-20" />
-            <Gift size={20} className="absolute top-[40%] left-[40%] text-brand/5 -rotate-30" />
-            <Gift size={35} className="absolute bottom-[8%] right-[15%] text-brand/6 rotate-15" />
+          {activePool.promoBanner ? (
+            <img 
+              src={activePool.promoBanner} 
+              alt={activePool.name} 
+              className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" 
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-bg-base">
+               <Gift size={64} className="text-brand/20 animate-pulse" />
+            </div>
+          )}
+
+          {/* Gradient Overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none" />
+
+          {/* Top Badges */}
+          <div className="absolute top-6 left-6 flex items-center gap-2">
+            <span className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full ${activePool.featured ? 'bg-yellow-500 text-black' : 'bg-brand text-black'}`}>
+              {activePool.status}
+            </span>
+            {activePool.featured && (
+              <span className="text-[10px] uppercase font-bold px-3 py-1 rounded-full bg-white/20 text-white backdrop-blur-md border border-white/30">
+                Premium Draw
+              </span>
+            )}
           </div>
 
-          {/* Large animated gift icon + prize */}
-          <div className="my-6 space-y-3 relative z-10 text-center flex flex-col items-center">
-            <div className="relative">
-              <Gift size={60} className="text-brand animate-bounce" strokeWidth={1.5} />
-              <div className="absolute inset-0 blur-xl bg-brand/20 rounded-full" />
-            </div>
-            <span className="text-[11px] text-text-secondary font-bold uppercase tracking-widest block">Grand Prize Pool Payout</span>
-            <div className="text-5xl md:text-7xl font-black text-brand glow-text tracking-tight">
-              {formatCurrency(activePool.prize)}
-            </div>
-          </div>
-
-          <div className="w-full space-y-5 z-10">
-            {/* Prize distribution Premium Cards */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-gradient-to-br from-[#ffffff] to-[#e6fcf0] p-3 rounded-2xl text-center flex flex-col items-center justify-center shadow-[0_10px_20px_rgba(0,0,0,0.2)] border-2 border-white scale-105 z-10 relative">
-                <span className="text-[9px] text-black/60 uppercase font-extrabold tracking-widest block mb-0.5">1st Place (60%)</span>
-                <span className="text-sm font-black text-black">{formatCurrency(activePool.prize * 0.60)}</span>
-                <div className="absolute -top-2.5 bg-brand text-black text-[8px] font-extrabold px-2 py-0.5 rounded-full shadow-md uppercase tracking-wider">
-                  Grand
+          {/* Bottom Content Area */}
+          <div className="relative z-10 p-8 mt-auto w-full">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 w-full">
+              
+              {/* Left Side: Info */}
+              <div className="flex-1 space-y-2">
+                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-xl">{activePool.name}</h2>
+                <p className="text-text-secondary text-sm max-w-lg leading-relaxed line-clamp-2">
+                  {activePool.description || 'Join this exclusive contract draw to claim institutional bonus prize pools. Secure your ticket today.'}
+                </p>
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  <div className="flex items-center gap-1.5 text-sm font-bold">
+                    <Trophy size={16} className="text-brand" />
+                    <span className="text-white">{formatCurrency(activePool.prize)} Pool</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm font-bold">
+                    <Users size={16} className="text-brand" />
+                    <span className="text-white">{activePool.participants} / {activePool.maxParticipants} Sold</span>
+                  </div>
+                  {activePool.drawDate && (
+                    <div className="flex items-center gap-1.5 text-sm font-bold">
+                      <Clock size={16} className="text-brand" />
+                      <span className="text-white">Draw: {new Date(activePool.drawDate).toLocaleDateString()}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-white/90 to-white/70 p-3 rounded-2xl text-center flex flex-col items-center justify-center border border-white/40 shadow-lg">
-                <span className="text-[9px] text-black/50 uppercase font-extrabold tracking-widest block mb-0.5">2nd Place (25%)</span>
-                <span className="text-xs font-black text-black/80">{formatCurrency(activePool.prize * 0.25)}</span>
-              </div>
-              <div className="bg-gradient-to-br from-white/90 to-white/70 p-3 rounded-2xl text-center flex flex-col items-center justify-center border border-white/40 shadow-lg">
-                <span className="text-[9px] text-black/50 uppercase font-extrabold tracking-widest block mb-0.5">3rd Place (15%)</span>
-                <span className="text-xs font-black text-black/80">{formatCurrency(activePool.prize * 0.15)}</span>
-              </div>
-            </div>
 
-            {/* Slots and buy */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-[11px] text-text-secondary font-semibold">
-                <span>Sold Tickets Progress</span>
-                <span className="text-white">{activePool.participants} / {activePool.maxParticipants} slots filled</span>
+              {/* Right Side: CTA */}
+              <div className="w-full md:w-auto shrink-0 flex flex-col items-center md:items-end gap-3">
+                <div className="text-right w-full">
+                  <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold mb-1">Entry Fee</div>
+                  <div className="text-2xl font-black text-brand drop-shadow-md">{formatCurrency(activePool.fee)}</div>
+                </div>
+                <button 
+                  onClick={handleBuyTicket}
+                  className="w-full md:w-56 bg-brand text-black font-extrabold text-sm py-4 rounded-xl hover:bg-brand-hover shadow-[0_0_20px_rgba(0,255,136,0.35)] transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider hover:scale-105 active:scale-95"
+                >
+                  <Ticket size={18} strokeWidth={2.5} /> Join Draw
+                </button>
               </div>
-              <div className="w-full bg-bg-base h-2 rounded-full overflow-hidden border border-border/55">
-                <div 
-                  className="bg-brand h-full rounded-full transition-all duration-1000" 
-                  style={{ width: `${(activePool.participants / activePool.maxParticipants) * 100}%` }}
-                />
-              </div>
+              
             </div>
-
-            <button 
-              onClick={handleBuyTicket}
-              className="w-full bg-brand text-black font-extrabold text-sm py-4 rounded-2xl hover:bg-brand-hover shadow-[0_0_20px_rgba(0,255,136,0.35)] transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider"
-            >
-              <Ticket size={18} strokeWidth={2.5} /> Purchase Ticket — {formatCurrency(activePool.fee)}
-            </button>
           </div>
         </motion.div>
       </div>
@@ -372,42 +376,65 @@ export default function LotteryClient({ dbLotteries, dbEntries, dbWinners }: { d
         {purchasing && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-bg-base border border-border/80 rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-gradient-to-b from-bg-card to-bg-base border border-white/10 rounded-3xl p-8 max-w-sm w-full relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
             >
+              {/* Premium Glow effect */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-brand/20 blur-[80px] rounded-full pointer-events-none" />
+              
               {purchaseStep === 'rolling' ? (
-                <div className="py-12 space-y-6">
-                  {/* Rolling counter effect */}
-                  <div className="w-16 h-16 border-4 border-t-brand border-border/40 rounded-full animate-spin mx-auto flex items-center justify-center" />
+                <div className="py-12 space-y-8 text-center relative z-10">
+                  <div className="relative w-20 h-20 mx-auto">
+                    <div className="absolute inset-0 border-4 border-t-brand border-white/10 rounded-full animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Ticket size={24} className="text-brand animate-pulse" />
+                    </div>
+                  </div>
                   
                   <div>
-                    <h3 className="text-md font-bold text-white">Minting Ticket Ledger</h3>
-                    <p className="text-xs text-text-secondary mt-1">Interlocking contract addresses inside pool.</p>
+                    <h3 className="text-xl font-black text-white tracking-tight">Minting Receipt</h3>
+                    <p className="text-xs text-text-secondary mt-2">Securing your allocation on the ledger...</p>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  <div className="w-14 h-14 bg-brand/10 border border-brand/20 text-brand rounded-full flex items-center justify-center mx-auto animate-bounce">
-                    <CheckCircle size={28} />
+                <div className="space-y-6 relative z-10">
+                  <div className="w-16 h-16 bg-brand/10 border border-brand/20 text-brand rounded-full flex items-center justify-center mx-auto animate-[bounce_1s_ease-in-out_1]">
+                    <CheckCircle size={32} strokeWidth={2.5} />
                   </div>
                   
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Purchase Approved</h3>
-                    <p className="text-xs text-text-secondary mt-1">Funds of {formatCurrency(activePool.fee)} deducted from Main wallet.</p>
+                  <div className="text-center border-b border-dashed border-white/20 pb-6">
+                    <h3 className="text-2xl font-black text-white tracking-tight">Payment Successful</h3>
+                    <p className="text-xs text-text-secondary mt-1">Amount deducted from Main Wallet</p>
                   </div>
 
-                  <div className="bg-bg-card/40 border border-border/80 p-4 rounded-xl space-y-2">
-                    <span className="text-[10px] text-text-secondary uppercase tracking-wider block font-bold">Your Ticket Code</span>
-                    <span className="text-2xl font-mono font-extrabold text-brand tracking-widest block">{generatedTicket}</span>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-text-secondary">Amount Paid</span>
+                      <span className="text-white font-bold">{formatCurrency(activePool.fee)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-text-secondary">Draw Pool</span>
+                      <span className="text-white font-bold">{activePool.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-text-secondary">Draw Date</span>
+                      <span className="text-white font-bold">{activePool.drawDate ? new Date(activePool.drawDate).toLocaleDateString() : 'TBA'}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-black/40 border border-brand/30 p-5 rounded-2xl space-y-2 text-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-brand/5 group-hover:bg-brand/10 transition-colors" />
+                    <span className="text-[10px] text-brand uppercase tracking-[0.2em] block font-black relative z-10">Official Ticket Code</span>
+                    <span className="text-2xl font-mono font-black text-white tracking-widest block relative z-10">{generatedTicket}</span>
                   </div>
 
                   <button 
                     onClick={closePurchaseModal}
-                    className="w-full bg-brand text-black font-extrabold text-xs py-3 rounded-xl hover:bg-brand-hover transition-all uppercase tracking-wider"
+                    className="w-full bg-white text-black hover:bg-gray-200 font-extrabold text-sm py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
                   >
-                    Confirm Receipt
+                    Return to Dashboard
                   </button>
                 </div>
               )}

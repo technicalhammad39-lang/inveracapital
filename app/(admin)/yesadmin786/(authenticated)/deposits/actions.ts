@@ -3,9 +3,12 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { verifySuperAdmin } from '@/app/actions/adminActions';
 
 export async function updateDepositStatus(depositId: string, newStatus: string) {
   try {
+    const admin = await verifySuperAdmin();
+    
     const deposit = await prisma.deposit.findUnique({ where: { id: depositId } });
     if (!deposit) return { success: false, error: 'Deposit not found' };
     if (deposit.status !== 'PENDING') return { success: false, error: 'Deposit is already processed' };
@@ -37,13 +40,24 @@ export async function updateDepositStatus(depositId: string, newStatus: string) 
         }
       }
       
-      // Log activity
+      // Log activity for user
       await tx.activityLog.create({
         data: {
           userId: deposit.userId,
           action: `Deposit ${newStatus} for ${deposit.amount}`,
           ipAddress: 'System',
           userAgent: 'Admin Panel'
+        }
+      });
+      
+      // Log Audit for admin
+      await tx.auditLog.create({
+        data: {
+          adminId: admin.id,
+          action: 'UPDATE_DEPOSIT_STATUS',
+          targetType: 'Deposit',
+          targetId: depositId,
+          newData: { status: newStatus }
         }
       });
     });

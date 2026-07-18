@@ -31,7 +31,6 @@ export async function getReferralStats() {
 
     const totalCommissions = commissions._sum.amount ? Number(commissions._sum.amount) : 0;
 
-    // Monthly growth logic
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     
@@ -42,7 +41,6 @@ export async function getReferralStats() {
       }
     });
 
-    // We can group by month for the chart
     const monthlyCommissions = recentCommissions.reduce((acc: any, curr) => {
       const month = curr.createdAt.toLocaleString('default', { month: 'short' });
       if (!acc[month]) acc[month] = 0;
@@ -70,8 +68,11 @@ export async function getReferralStats() {
   }
 }
 
-// Helper for Recursive Tree
-async function getDownline(userId: string, currentLevel: number, maxLevel: number): Promise<any[]> {
+// ----------------------------------------------------------------------
+// Interactive Network Tree Logic
+// ----------------------------------------------------------------------
+
+async function getDownlineRecursive(userId: string, currentLevel: number, maxLevel: number): Promise<any[]> {
   if (currentLevel > maxLevel) return [];
 
   const link = await prisma.referralLink.findUnique({
@@ -79,6 +80,7 @@ async function getDownline(userId: string, currentLevel: number, maxLevel: numbe
     include: {
       referredUsers: {
         include: {
+          profile: true,
           investments: { where: { status: 'ACTIVE' } },
           commissionsGiven: { where: { toUserId: userId } },
         }
@@ -91,16 +93,20 @@ async function getDownline(userId: string, currentLevel: number, maxLevel: numbe
   const children = [];
   for (const user of link.referredUsers) {
     const active = user.investments.length > 0;
+    const totalInvested = user.investments.reduce((sum, inv) => sum + Number(inv.amount), 0);
     const earnings = user.commissionsGiven.reduce((sum, c) => sum + Number(c.amount), 0);
     
-    const grandChildren = await getDownline(user.id, currentLevel + 1, maxLevel);
+    const grandChildren = await getDownlineRecursive(user.id, currentLevel + 1, maxLevel);
     
     children.push({
-      name: user.username || user.email.split('@')[0],
+      id: user.id,
+      name: user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName}` : user.username || user.email.split('@')[0],
+      avatar: user.profile?.avatarUrl || (user.username || user.email).substring(0, 2).toUpperCase(),
       level: currentLevel,
       active,
-      team: grandChildren.length,
+      teamSize: grandChildren.length,
       earnings,
+      totalInvested,
       joined: user.createdAt.toLocaleDateString(),
       children: grandChildren.length > 0 ? grandChildren : undefined
     });
@@ -109,43 +115,65 @@ async function getDownline(userId: string, currentLevel: number, maxLevel: numbe
   return children;
 }
 
-export async function getNetworkTree() {
+export async function getInteractiveNetworkTree() {
   try {
     const user = await getCurrentUser();
     if (!user) throw new Error('Unauthorized');
 
-    const children = await getDownline(user.id, 1, 3); // Load up to 3 levels deep
+    const children = await getDownlineRecursive(user.id, 1, 3); // Load up to 3 levels deep
 
-    // We also need the user's total team size and earnings from these users for the root node
-    const activeInvestments = await prisma.userInvestment.count({
-      where: { userId: user.id, status: 'ACTIVE' }
-    });
-
-    const totalCommissions = await prisma.referralCommission.aggregate({
-      where: { toUserId: user.id },
-      _sum: { amount: true }
-    });
-
-    const treeData = {
-      name: user.username || 'You',
-      level: 0,
-      active: activeInvestments > 0,
-      team: children.length,
-      earnings: totalCommissions._sum.amount ? Number(totalCommissions._sum.amount) : 0,
-      joined: 'System Root',
-      children
-    };
-
-    return { success: true, treeData };
+    return { success: true, treeData: children };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
 
-export async function getLeaderboard() {
+// ----------------------------------------------------------------------
+// Commission Logs
+// ----------------------------------------------------------------------
+
+export async function getCommissionLogs() {
   try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const logs = await prisma.referralCommission.findMany({
+      where: { toUserId: user.id },
+      include: {
+        fromUser: {
+          include: { profile: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50 // Limit to latest 50 for performance
+    });
+
+    const formattedLogs = logs.map(log => ({
+      id: log.id,
+      sourceUser: log.fromUser.profile?.firstName 
+        ? `${log.fromUser.profile.firstName} ${log.fromUser.profile.lastName}` 
+        : log.fromUser.username || log.fromUser.email.split('@')[0],
+      amount: Number(log.amount),
+      level: log.level,
+      date: log.createdAt.toLocaleString()
+    }));
+
+    return { success: true, logs: formattedLogs };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ----------------------------------------------------------------------
+// Global Leaderboard
+// ----------------------------------------------------------------------
+
+export async function getGlobalLeaderboard() {
+  try {
+    // Top 10 users by total commission earned
     const users = await prisma.user.findMany({
       include: {
+        profile: true,
         commissionsEarned: true,
         referralLink: {
           include: {
@@ -159,7 +187,9 @@ export async function getLeaderboard() {
 
     const leaderboard = users.map((u) => {
       const team = u.referralLink ? u.referralLink.referredUsers.filter(ru => ru.investments.length > 0).length : 0;
+      const networkSize = u.referralLink ? u.referralLink.referredUsers.length : 0;
       const earnings = u.commissionsEarned.reduce((sum, c) => sum + Number(c.amount), 0);
+      
       let tier = 'Starter';
       let rate = '1%';
       if (team >= 50 || earnings >= 10000) { tier = 'Diamond Partner'; rate = '12%'; }
@@ -167,16 +197,19 @@ export async function getLeaderboard() {
       else if (team >= 5 || earnings >= 1000) { tier = 'Silver Partner'; rate = '5%'; }
       
       return {
-        name: u.username || u.email.split('@')[0],
+        id: u.id,
+        name: u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName}` : u.username || u.email.split('@')[0],
+        avatar: u.profile?.avatarUrl || (u.username || u.email).substring(0, 2).toUpperCase(),
         team,
+        networkSize,
         earnings,
         tier,
         rate
       };
     })
     .filter(u => u.earnings > 0 || u.team > 0)
-    .sort((a, b) => b.earnings - a.earnings)
-    .slice(0, 10)
+    .sort((a, b) => b.earnings - a.earnings) // Sort by earnings
+    .slice(0, 10) // Top 10
     .map((u, i) => ({
       ...u,
       rank: i === 0 ? '🥇 1st' : i === 1 ? '🥈 2nd' : i === 2 ? '🥉 3rd' : `${i + 1}th`

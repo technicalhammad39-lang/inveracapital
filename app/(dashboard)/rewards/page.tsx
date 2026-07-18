@@ -6,5 +6,5 @@ export default async function RewardsPage() {
   const resRewards = await getRewardsData();
   const dbData = resRewards.success ? resRewards : null;
 
-  return <RewardsClient dbData={dbData} />;
+  return <RewardsClient dbData={dbData ? JSON.parse(JSON.stringify(dbData)) : null} />;
 }

@@ -16,7 +16,7 @@ function MarketOverview() {
     script.innerHTML = JSON.stringify({
       "autosize": true,
       "symbol": "BINANCE:BTCUSDT",
-      "interval": "D",
+      "interval": "1",
       "timezone": "Etc/UTC",
       "theme": "dark",
       "style": "1",
@@ -24,8 +24,10 @@ function MarketOverview() {
       "enable_publishing": false,
       "backgroundColor": "rgba(0, 0, 0, 0)",
       "gridColor": "rgba(255, 255, 255, 0.05)",
-      "hide_top_toolbar": true,
-      "hide_legend": true,
+      "hide_top_toolbar": false,
+      "hide_legend": false,
+      "hide_side_toolbar": false,
+      "allow_symbol_change": true,
       "save_image": false,
       "container_id": "tradingview_widget",
       "support_host": "https://www.tradingview.com"
@@ -38,19 +40,10 @@ function MarketOverview() {
   }, []);
 
   return (
-    <div className="glass rounded-2xl p-6 lg:col-span-2 h-[450px] flex flex-col relative overflow-hidden">
-      <div className="flex items-center justify-between mb-4 relative z-10">
-        <div className="space-y-1">
-          <h3 className="font-bold text-md text-white flex items-center gap-2">
-            <Activity size={16} className="text-brand" /> Market Overview
-          </h3>
-          <p className="text-xs text-text-secondary">Live BTC/USDT advanced chart</p>
-        </div>
-      </div>
-      
+    <div className="glass rounded-2xl lg:col-span-2 h-[450px] flex flex-col relative overflow-hidden">
       {/* Loading Skeleton */}
       {isLoading && (
-        <div className="absolute inset-0 top-[76px] p-6 pt-0 z-0 flex flex-col">
+        <div className="absolute inset-0 z-0 flex flex-col p-6">
           <div className="w-full h-full rounded-xl bg-white/5 animate-pulse flex items-center justify-center border border-white/5">
             <div className="flex flex-col items-center gap-3">
               <Activity className="text-brand/50 animate-pulse" size={32} />

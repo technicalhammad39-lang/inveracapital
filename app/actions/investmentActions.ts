@@ -79,6 +79,16 @@ export async function purchaseInvestmentPlan(planId: string, amount: string) {
           description: `Investment in ${plan.name}`,
           status: 'COMPLETED'
         }
+      }),
+      prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          action: 'INVESTMENT_STARTED',
+          type: 'USER',
+          amount: numAmount,
+          status: 'COMPLETED',
+          ipAddress: '127.0.0.1'
+        }
       })
     ]);
 

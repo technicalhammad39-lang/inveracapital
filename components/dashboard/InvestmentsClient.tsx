@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useCurrency } from '@/components/CurrencyProvider';
 import { 
   Shield, 
@@ -33,15 +33,18 @@ import {
 } from 'recharts';
 
 import * as LucideIcons from 'lucide-react';
+import { purchaseInvestmentPlan } from '@/app/actions/investmentActions';
 
 export default function InvestmentsClient({ 
   dbPlans = [], 
   dbUserInvestments = [],
-  globalAllocationData = [] 
+  globalAllocationData = [],
+  dbWallet
 }: { 
   dbPlans?: any[], 
   dbUserInvestments?: any[],
-  globalAllocationData?: any[]
+  globalAllocationData?: any[],
+  dbWallet?: any
 }) {
   const { formatCurrency } = useCurrency();
   
@@ -71,14 +74,55 @@ export default function InvestmentsClient({
   // Tabs State
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'expired'>('active');
 
-  // ROI Calculator State
+  // ROI Calculator & Purchase State
   const [calcAmount, setCalcAmount] = useState<number>(plans.length > 0 ? plans[0].min : 10000);
   const [calcPlan, setCalcPlan] = useState<string>(plans.length > 0 ? plans[0].id : '');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [purchaseStep, setPurchaseStep] = useState<'idle' | 'rolling' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const selectedPlan = plans.find(p => p.id === calcPlan) || plans[0] || { roi: 0, duration: 0, min: 0 };
   const calculatedDaily = calcAmount * (selectedPlan.roi / 100);
   const calculatedProfit = calculatedDaily * selectedPlan.duration;
   const calculatedTotal = calcAmount + calculatedProfit;
+
+  const handleOpenPurchase = (plan: any) => {
+    setCalcPlan(plan.id);
+    setCalcAmount(plan.fixedAmount || plan.min);
+    setPurchaseStep('idle');
+    setErrorMsg('');
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmPurchase = async () => {
+    if (calcAmount < selectedPlan.min || calcAmount > selectedPlan.max) {
+      setErrorMsg(`Amount must be between ${selectedPlan.min} and ${selectedPlan.max}`);
+      setPurchaseStep('error');
+      return;
+    }
+    
+    setIsPurchasing(true);
+    setPurchaseStep('rolling');
+    
+    try {
+      const res = await purchaseInvestmentPlan(selectedPlan.id, String(calcAmount));
+      if (res.success) {
+        setPurchaseStep('success');
+        setTimeout(() => {
+          window.location.reload(); // Hard reload to see active investments immediately
+        }, 3000);
+      } else {
+        setErrorMsg(res.error || 'Failed to purchase plan');
+        setPurchaseStep('error');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Unknown error occurred');
+      setPurchaseStep('error');
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
 
   // Global Recharts Allocation Data
   const totalGlobalCapital = globalAllocationData.reduce((sum, item) => sum + Number(item.value), 0);
@@ -179,7 +223,7 @@ export default function InvestmentsClient({
                   </span>
                 </div>
                 <button 
-                  onClick={() => { setCalcPlan(plan.id); setCalcAmount(plan.min); }}
+                  onClick={() => handleOpenPurchase(plan)}
                   className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all ${
                     plan.popular 
                       ? 'bg-black text-white hover:bg-gray-900 shadow-xl hover:shadow-2xl' 
@@ -401,6 +445,131 @@ export default function InvestmentsClient({
           )}
         </div>
       </motion.div>
+
+      {/* Investment Purchase Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => !isPurchasing && setIsModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-bg-card border border-border/80 rounded-2xl overflow-hidden shadow-2xl"
+            >
+              {purchaseStep === 'idle' && (
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-2">Purchase Investment</h3>
+                  <p className="text-sm text-text-secondary mb-6">You are configuring {selectedPlan.name}.</p>
+                  
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-bg-base p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                      <span className="text-xs text-text-secondary font-semibold">Available Wallet Balance</span>
+                      <span className="text-sm font-bold text-white">{formatCurrency(dbWallet?.main || 0)}</span>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-text-secondary font-semibold block mb-2">Investment Amount</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary text-sm font-semibold">$</span>
+                        <input 
+                          type="number" 
+                          disabled={!!selectedPlan.fixedAmount}
+                          value={calcAmount}
+                          onChange={(e) => setCalcAmount(Number(e.target.value))}
+                          className="w-full bg-bg-base border border-border/80 rounded-xl py-3 pl-8 pr-4 outline-none focus:border-brand text-sm font-bold text-white transition-colors" 
+                        />
+                      </div>
+                      <div className="text-[10px] text-text-secondary mt-1 text-right">
+                        Limits: {formatCurrency(selectedPlan.min)} - {formatCurrency(selectedPlan.max)}
+                      </div>
+                    </div>
+
+                    <div className="bg-brand/5 border border-brand/20 p-4 rounded-xl">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-brand font-semibold">Daily Yield</span>
+                        <span className="text-sm font-bold text-white">{formatCurrency(calculatedDaily)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-brand font-semibold">Total Profit</span>
+                        <span className="text-sm font-bold text-white">+{formatCurrency(calculatedProfit)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {errorMsg && (
+                    <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-lg text-xs flex items-center gap-2 mb-4">
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setIsModalOpen(false)}
+                      className="flex-1 py-3 rounded-xl font-bold text-xs text-white bg-bg-base border border-border/80 hover:bg-white/5 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={handleConfirmPurchase}
+                      className="flex-1 py-3 rounded-xl font-bold text-xs text-black bg-brand hover:bg-brand-hover transition-all"
+                    >
+                      Confirm Investment
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {purchaseStep === 'rolling' && (
+                <div className="p-10 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 border-4 border-brand/20 border-t-brand rounded-full animate-spin mb-4" />
+                  <h3 className="text-lg font-bold text-white mb-2">Processing Transaction...</h3>
+                  <p className="text-xs text-text-secondary">Securing your position on the smart ledger.</p>
+                </div>
+              )}
+
+              {purchaseStep === 'success' && (
+                <div className="p-10 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-brand/20 text-brand rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Investment Successful!</h3>
+                  <p className="text-xs text-text-secondary mb-6">Your capital is now actively yielding returns.</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="w-full py-3 rounded-xl font-bold text-xs text-black bg-brand hover:bg-brand-hover transition-all"
+                  >
+                    View Active Portfolio
+                  </button>
+                </div>
+              )}
+
+              {purchaseStep === 'error' && (
+                <div className="p-10 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mb-4">
+                    <AlertTriangle size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Transaction Failed</h3>
+                  <p className="text-xs text-rose-400 mb-6">{errorMsg}</p>
+                  <button 
+                    onClick={() => setPurchaseStep('idle')}
+                    className="w-full py-3 rounded-xl font-bold text-xs text-white bg-bg-base border border-border/80 hover:bg-white/5 transition-all"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

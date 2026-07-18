@@ -2,13 +2,14 @@ import React from 'react';
 import StatsHeader from '@/components/dashboard/StatsHeader';
 import PortfolioGrowthChart from '@/components/dashboard/PortfolioGrowthChart';
 import ActiveAllocationsList from '@/components/dashboard/ActiveAllocationsList';
-import RecentLedgersList from '@/components/dashboard/RecentLedgersList';
-import { getPortfolioChartData } from '@/app/actions/dashboardActions';
+import PlatformActivityFeed from '@/components/dashboard/PlatformActivityFeed';
+import { getPortfolioChartData, getPlatformActivityFeed } from '@/app/actions/dashboardActions';
 
 import MarketOverview from '@/components/dashboard/MarketOverview';
 
 export default async function Dashboard() {
   const chartData = await getPortfolioChartData();
+  const activities = await getPlatformActivityFeed();
 
   return (
     <div className="space-y-8 pb-10">
@@ -36,8 +37,8 @@ export default async function Dashboard() {
 
       </div>
 
-      {/* 4. Recent Ledgers */}
-      <RecentLedgersList />
+      {/* 4. Platform Activity Feed */}
+      <PlatformActivityFeed activities={activities || []} />
 
     </div>
   );

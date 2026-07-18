@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, 
   Filter, 
@@ -12,7 +12,8 @@ import {
   CheckCircle,
   DollarSign, 
   Eye, 
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useCurrency } from '@/components/CurrencyProvider';
@@ -52,28 +53,47 @@ export default function UsersClient({ initialUsers, totalUsers }: { initialUsers
     }
   };
 
-  const handleAdjustBalance = async (userId: string, identifier: string) => {
-    const amountStr = prompt(`Adjust Balance for ${identifier}\nEnter amount to add (use negative for deduction):`);
-    if (!amountStr || isNaN(Number(amountStr))) return;
+  const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+  const [adjustUser, setAdjustUser] = useState<{ id: string, identifier: string } | null>(null);
+  const [adjustAmount, setAdjustAmount] = useState('');
+  const [adjustReason, setAdjustReason] = useState('');
+  const [adjustType, setAdjustType] = useState<'add' | 'deduct'>('add');
+  const [adjustField, setAdjustField] = useState<'balance' | 'totalProfit'>('balance');
+
+  const openAdjustModal = (userId: string, identifier: string) => {
+    setAdjustUser({ id: userId, identifier });
+    setAdjustAmount('');
+    setAdjustReason('');
+    setAdjustType('add');
+    setAdjustField('balance');
+    setAdjustModalOpen(true);
+  };
+
+  const submitAdjustBalance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adjustUser || !adjustAmount || !adjustReason) return;
     
-    const reason = prompt('Enter a reason for this audit log:');
-    if (!reason) {
-      alert('A reason is required for balance adjustments.');
-      return;
-    }
+    setIsProcessing(adjustUser.id);
+    setAdjustModalOpen(false);
     
-    setIsProcessing(userId);
     try {
       const m = await import('@/app/actions/adminActions');
-      const res = await m.manuallyAdjustWallet(userId, amountStr, reason);
+      const res = await m.manuallyAdjustWallet(adjustUser.id, adjustAmount, adjustReason, adjustType, adjustField);
       if (res.success) {
-        setUsers(users.map(u => u.id === userId ? { ...u, balance: u.balance + Number(amountStr) } : u));
-        alert('Balance adjusted and logged successfully.');
+        setUsers(users.map(u => {
+          if (u.id === adjustUser.id) {
+             const amt = Number(adjustAmount);
+             const net = adjustType === 'add' ? amt : -amt;
+             if (adjustField === 'balance') return { ...u, balance: (u.balance || 0) + net };
+             return u;
+          }
+          return u;
+        }));
       } else {
         alert(`Error: ${res.error}`);
       }
-    } catch (e: any) {
-      alert(`Error: ${e.message}`);
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
     }
     setIsProcessing(null);
   };
@@ -181,7 +201,7 @@ export default function UsersClient({ initialUsers, totalUsers }: { initialUsers
                         <Eye size={16} />
                       </button>
                       <button 
-                        onClick={() => handleAdjustBalance(user.id, user.username || user.email)}
+                        onClick={() => openAdjustModal(user.id, user.username || user.email)}
                         disabled={isProcessing === user.id}
                         className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50" 
                         title="Adjust Balance"
@@ -221,6 +241,128 @@ export default function UsersClient({ initialUsers, totalUsers }: { initialUsers
         </div>
       </motion.div>
 
+    {/* Balance Adjustment Modal */}
+      <AnimatePresence>
+        {adjustModalOpen && adjustUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => !isProcessing && setAdjustModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[#0a0a0b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Adjust User Balance</h3>
+                  <p className="text-xs text-text-secondary mt-1">Modifying wallet for {adjustUser.identifier}</p>
+                </div>
+                <button 
+                  onClick={() => setAdjustModalOpen(false)}
+                  disabled={!!isProcessing}
+                  className="p-2 text-text-secondary hover:text-white bg-white/5 rounded-xl transition-colors disabled:opacity-50"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={submitAdjustBalance} className="p-6 space-y-5">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAdjustType('add')}
+                    className={clsx(
+                      "p-3 rounded-xl border text-sm font-bold transition-all",
+                      adjustType === 'add' 
+                        ? "bg-brand/10 border-brand/40 text-brand shadow-[0_0_15px_rgba(0,255,136,0.15)]" 
+                        : "bg-black/50 border-white/10 text-text-secondary hover:bg-white/5"
+                    )}
+                  >
+                    Add Funds
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAdjustType('deduct')}
+                    className={clsx(
+                      "p-3 rounded-xl border text-sm font-bold transition-all",
+                      adjustType === 'deduct' 
+                        ? "bg-rose-500/10 border-rose-500/40 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)]" 
+                        : "bg-black/50 border-white/10 text-text-secondary hover:bg-white/5"
+                    )}
+                  >
+                    Deduct Funds
+                  </button>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">Target Wallet</label>
+                  <select 
+                    value={adjustField}
+                    onChange={(e) => setAdjustField(e.target.value as any)}
+                    className="w-full bg-[#0a0a0b] border border-white/10 rounded-xl py-3 px-4 text-sm focus:border-brand focus:shadow-[0_0_15px_rgba(0,255,136,0.1)] outline-none transition-all text-white font-medium"
+                  >
+                    <option value="balance">Main Available Balance</option>
+                    <option value="totalProfit">Total Profit Earned</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">Amount</label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      min="0.01"
+                      value={adjustAmount}
+                      onChange={(e) => setAdjustAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-[#0a0a0b] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm focus:border-brand focus:shadow-[0_0_15px_rgba(0,255,136,0.1)] outline-none transition-all text-white font-medium"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">Reason (Audit Log)</label>
+                  <textarea 
+                    value={adjustReason}
+                    onChange={(e) => setAdjustReason(e.target.value)}
+                    placeholder="e.g. Correcting deposit error, manual bonus..."
+                    className="w-full bg-[#0a0a0b] border border-white/10 rounded-xl py-3 px-4 text-sm focus:border-brand focus:shadow-[0_0_15px_rgba(0,255,136,0.1)] outline-none transition-all text-white font-medium h-24 resize-none"
+                    required
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button 
+                    type="submit" 
+                    disabled={!!isProcessing}
+                    className={clsx(
+                      "w-full h-12 font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2",
+                      adjustType === 'add' 
+                        ? "bg-brand text-black hover:bg-brand-hover shadow-[0_0_20px_rgba(0,255,136,0.2)]" 
+                        : "bg-rose-500 text-white hover:bg-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+                    )}
+                  >
+                    {isProcessing === adjustUser.id ? (
+                      <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    ) : (
+                      <>{adjustType === 'add' ? 'Confirm Addition' : 'Confirm Deduction'}</>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

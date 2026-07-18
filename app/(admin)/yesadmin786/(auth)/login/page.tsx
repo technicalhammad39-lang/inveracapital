@@ -6,10 +6,15 @@ import { ShieldCheck, Lock, User, KeyRound, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 
+import { adminLogin } from '@/app/actions/adminActions';
+
 export default function AdminLogin() {
   const router = useRouter();
   const [role, setRole] = useState('super_admin');
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('invera@admin.com');
+  const [password, setPassword] = useState('HammadCEO.786');
+  const [error, setError] = useState('');
 
   const roles = [
     { id: 'super_admin', label: 'Super Admin', color: 'text-brand' },
@@ -18,13 +23,20 @@ export default function AdminLogin() {
     { id: 'compliance', label: 'Compliance Officer', color: 'text-amber-400' },
   ];
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Mock login delay
-    setTimeout(() => {
+    setError('');
+    
+    const res = await adminLogin(email, role, password);
+    
+    if (res.success) {
       router.push('/yesadmin786');
-    }, 1500);
+      router.refresh();
+    } else {
+      setError(res.error || 'Login failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,7 +93,8 @@ export default function AdminLogin() {
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
                 <input 
                   type="email" 
-                  defaultValue="admin@inveracapital.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-bg-base border border-border/80 rounded-xl py-3.5 pl-11 pr-4 text-sm focus:border-brand focus:shadow-[0_0_15px_rgba(0,255,136,0.1)] outline-none transition-all text-white font-medium"
                   required
                 />
@@ -94,13 +107,21 @@ export default function AdminLogin() {
                 <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
                 <input 
                   type="password" 
-                  defaultValue="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter secure password"
                   className="w-full bg-bg-base border border-border/80 rounded-xl py-3.5 pl-11 pr-4 text-sm focus:border-brand focus:shadow-[0_0_15px_rgba(0,255,136,0.1)] outline-none transition-all text-white font-medium tracking-widest"
                   required
                 />
               </div>
             </div>
           </div>
+
+          {error && (
+            <div className="text-rose-500 text-xs font-bold text-center bg-rose-500/10 py-2 rounded-lg">
+              {error}
+            </div>
+          )}
 
           <button 
             type="submit" 

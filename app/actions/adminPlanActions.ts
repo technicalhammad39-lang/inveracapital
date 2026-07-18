@@ -1,19 +1,11 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
-
-// Ensure user is admin
-async function checkAdmin() {
-  const user = await getCurrentUser();
-  if (!user || user.role?.name !== 'ADMIN') {
-    throw new Error('Unauthorized');
-  }
-}
+import { verifySuperAdmin } from './adminActions';
 
 export async function getAllInvestmentPlansAdmin() {
   try {
-    await checkAdmin();
+    await verifySuperAdmin();
     const plans = await prisma.investmentPlan.findMany({
       orderBy: { displayOrder: 'asc' }
     });
@@ -25,7 +17,7 @@ export async function getAllInvestmentPlansAdmin() {
 
 export async function createInvestmentPlan(data: any) {
   try {
-    await checkAdmin();
+    const admin = await verifySuperAdmin();
     const newPlan = await prisma.investmentPlan.create({
       data: {
         name: data.name,
@@ -48,6 +40,17 @@ export async function createInvestmentPlan(data: any) {
         visibility: data.visibility ?? true
       }
     });
+
+    await prisma.auditLog.create({
+      data: {
+        adminId: admin.id,
+        action: 'CREATE_INVESTMENT_PLAN',
+        targetType: 'InvestmentPlan',
+        targetId: newPlan.id,
+        newData: JSON.parse(JSON.stringify(newPlan))
+      }
+    });
+
     return { success: true, data: newPlan };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -56,7 +59,10 @@ export async function createInvestmentPlan(data: any) {
 
 export async function updateInvestmentPlan(id: string, data: any) {
   try {
-    await checkAdmin();
+    const admin = await verifySuperAdmin();
+    const oldPlan = await prisma.investmentPlan.findUnique({ where: { id } });
+    if (!oldPlan) throw new Error('Investment plan not found');
+    
     const updatedPlan = await prisma.investmentPlan.update({
       where: { id },
       data: {
@@ -80,6 +86,18 @@ export async function updateInvestmentPlan(id: string, data: any) {
         visibility: data.visibility
       }
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        adminId: admin.id,
+        action: 'UPDATE_INVESTMENT_PLAN',
+        targetType: 'InvestmentPlan',
+        targetId: updatedPlan.id,
+        oldData: JSON.parse(JSON.stringify(oldPlan)),
+        newData: JSON.parse(JSON.stringify(updatedPlan))
+      }
+    });
+
     return { success: true, data: updatedPlan };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -88,8 +106,19 @@ export async function updateInvestmentPlan(id: string, data: any) {
 
 export async function deleteInvestmentPlan(id: string) {
   try {
-    await checkAdmin();
-    await prisma.investmentPlan.delete({ where: { id } });
+    const admin = await verifySuperAdmin();
+    const deletedPlan = await prisma.investmentPlan.delete({ where: { id } });
+    
+    await prisma.auditLog.create({
+      data: {
+        adminId: admin.id,
+        action: 'DELETE_INVESTMENT_PLAN',
+        targetType: 'InvestmentPlan',
+        targetId: deletedPlan.id,
+        oldData: JSON.parse(JSON.stringify(deletedPlan))
+      }
+    });
+    
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

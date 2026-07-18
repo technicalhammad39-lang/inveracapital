@@ -10,5 +10,5 @@ export default async function AdminPaymentMethodsPage() {
     orderBy: { createdAt: 'desc' }
   });
 
-  return <PaymentMethodsClient methods={methods} />;
+  return <PaymentMethodsClient methods={methods ? JSON.parse(JSON.stringify(methods)) : []} />;
 }

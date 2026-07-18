@@ -18,10 +18,10 @@ export default async function WalletPage() {
   const cryptos = resCryptos.success && resCryptos.wallets ? resCryptos.wallets : [];
 
   return <WalletClient 
-    dbWalletData={dbWalletData} 
-    paymentMethods={paymentMethods} 
-    banks={banks} 
-    cryptos={cryptos} 
-    recentLedgers={ledgers || []}
+    dbWalletData={dbWalletData ? JSON.parse(JSON.stringify(dbWalletData)) : null} 
+    paymentMethods={paymentMethods ? JSON.parse(JSON.stringify(paymentMethods)) : []} 
+    banks={banks ? JSON.parse(JSON.stringify(banks)) : []} 
+    cryptos={cryptos ? JSON.parse(JSON.stringify(cryptos)) : []} 
+    recentLedgers={ledgers ? JSON.parse(JSON.stringify(ledgers)) : []}
   />;
 }
